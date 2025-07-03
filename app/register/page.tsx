@@ -1,52 +1,93 @@
 "use client"
-import { create } from 'domain';
 import React, { useEffect, useState } from 'react'
-import { createUser, deleteUser } from '../api/actions';
+
 import { Role } from '@prisma/client';
+import createUser from '../api/action1';
 
 const page = () => {
 
+  // const [formData, setFormData] = useState({
+  //   name:"",
+  //   employeeId:'',
+  //   email:'',
+  //   password:'',
+  //   confirmPassword:""
+
+  // })
+
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   // const { id, value } = e.target;
+  //   setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }));
+  // };
+
+  // const handleSubmit = async (e:React.ChangeEvent<HTMLFormElement>) => {
+  //     e.preventDefault()
+  
+  //     const { name, employeeId, email, password, confirmPassword } = formData;
+
+  //     if (!name || !employeeId || !email || !password || !confirmPassword) {
+  //       alert("All fields are required");
+  //       return;
+  //     }
+  //     if (password !== confirmPassword) {
+  //       alert("Passwords do not match");
+  //       return;
+  //     }
+
+  //     const newuser = {
+  //       name,
+  //       employeeId,
+  //       email,
+  //       password,
+  //       role: Role.USER
+  //     }
+  //     const res = await createUser(newuser);
+  //     const deletedUser = await deleteUser(1)
+  //     alert("user deleted successfully")
+  //     console.log("user created :", res);
+  //     alert("User created successfully! Please login to continue.");
+  // }
+
   const [formData, setFormData] = useState({
-    name:"",
-    employeeId:'',
+    name:'',
     email:'',
+    employeeId:'',
     password:'',
-    confirmPassword:""
+    confirmPassword:'',
 
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // const { id, value } = e.target;
-    setFormData(prev => ({ ...prev, [e.target.id]: e.target.value }));
-  };
-
-  const handleSubmit = async (e:React.ChangeEvent<HTMLFormElement>) => {
-      e.preventDefault()
-  
-      const { name, employeeId, email, password, confirmPassword } = formData;
-
-      if (!name || !employeeId || !email || !password || !confirmPassword) {
-        alert("All fields are required");
-        return;
-      }
-      if (password !== confirmPassword) {
-        alert("Passwords do not match");
-        return;
-      }
-
-      const newuser = {
-        name,
-        employeeId,
-        email,
-        password,
-        role: Role.USER
-      }
-      const res = await createUser(newuser);
-      const deletedUser = await deleteUser(1)
-      alert("user deleted successfully")
-      console.log("user created :", res);
-      alert("User created successfully! Please login to continue.");
+  const handleChange=(e:React.ChangeEvent<HTMLInputElement>)=>{
+      const {id,value} = e.target
+      setFormData((prev)=>({...prev,[id]:value}))
   }
+
+  const handleSubmit= async(e:React.ChangeEvent<HTMLFormElement>) =>{
+    e.preventDefault()
+
+    const {name, email, employeeId, password, confirmPassword}= formData
+
+    if (!name || !email || !employeeId || !password || !confirmPassword){
+      alert("All fields are required")
+      return
+    }
+
+    if(password !== confirmPassword){
+      alert('Passwords should match')
+      return
+    }
+
+    const newUser={
+      name,
+      email,
+      employeeId,
+      password,
+      role: 'USER' as Role
+    }
+    const res = await createUser(newUser)
+    console.log("user created: ", res)
+  }
+
 
   return (
     <div className='flex register '>

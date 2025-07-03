@@ -1,16 +1,44 @@
+'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { login } from '../api/action1'
+import { useRouter } from 'next/navigation'
 
-import { Button } from '@/components/ui/button'
-
-const page = () => {
+const page =  () => {
+  const router = useRouter()
+  const [formData, setFormData] = useState({
+    email:"",
+    password:""
+  })
 
   const {
     register,
-    handleSubmit,
     formState: { errors },
   } = useForm()
+
+  const handleChange = (e:React.ChangeEvent<HTMLInputElement>)=>{
+    setFormData(prev=>({...prev,[e.target.id]:e.target.value}))
+  }
+
+  const handleSubmit =async (e:React.ChangeEvent<HTMLFormElement>)=>{
+    e.preventDefault()
+
+    const {email,password} = formData
+
+    if (!email || !password) {
+      alert("All fields are required");
+      return;
+    }
+
+    const user = {
+      email,password
+    }
+
+    const res = await login(user)
+    console.log(res)
+  
+  }
 
 
   return (
@@ -22,14 +50,14 @@ const page = () => {
         <div className='flex flex-col  w-full '>
 
 
-          <form className='flex max-w-[40vw]  flex-col max gap-2' >
+          <form onSubmit={handleSubmit} className='flex max-w-[40vw]  flex-col max gap-2' >
 
             <label className='text-gray-600' htmlFor="email">Email address </label>
             <input
               {...register("email")}
               placeholder='Email'
               id='email'
-              onChange={(e) => (e.target.value)}
+              onChange={handleChange}
               className='border w-full border-gray-300 px-3 py-2   text-md rounded'
             />
             {errors.email && <p className='text-red-500 text-sm'>Email is required</p>}
@@ -44,7 +72,7 @@ const page = () => {
               type="password"
               id='password'
               placeholder='Password'
-              onChange={(e) => (e.target.value)}
+              onChange={handleChange}
               className='border w-full border-gray-300  px-3 py-2 text-md rounded'
             />
             {errors.password && (<p>Password must be at least 6 characters</p>)}
