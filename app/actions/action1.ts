@@ -1,6 +1,9 @@
 'use server'
 import { PrismaClient} from "@prisma/client";
 import bcrypt from "bcryptjs";
+
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
 import { createSession, verifySession } from "./session";
 
 const prisma = new PrismaClient();
@@ -68,6 +71,10 @@ export async function login(data:UserResponse) {
         throw new Error("Invalid password");
     }
 
+    if (!user.is_approved){
+        throw new Error("User not approved by admin");
+    }
+
     const signedUser = {
         name: user.name,
         email: user.email,
@@ -82,10 +89,67 @@ export async function login(data:UserResponse) {
 
 export async function getUsers() {
   const user = verifySession();
+
   if (!user) {
     throw new Error("Unauthorized");
   }
+
   const users = await prisma.user.findMany()
-  console.log(users)
+    
+
   return users
 }
+ 
+// export async function getUserName(){
+//     const user = await verifySession();
+    
+//     if (!user) {
+//         throw new Error("Unauthorized");
+//     }
+    
+//     return user.name;
+// }
+
+
+export const getCurrentUser = async () => {
+    const user = await verifySession();
+
+    if (!user) {
+        return null;
+    }
+
+    return user;
+}
+
+export async function userLogout() {
+    const cookieStore = await cookies();
+    cookieStore.delete('session');
+
+    return { message: "Logged out successfully" };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
