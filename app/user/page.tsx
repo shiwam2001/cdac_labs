@@ -1,9 +1,20 @@
 import React from 'react'
+import { IoLogOut } from 'react-icons/io5'
+import { getCurrentUser, userLogout } from '../actions/action1'
+import User from './user'
+import { redirect } from 'next/navigation'
 
-const page = () => {
+const page = async () => {
+
+ const user = await getCurrentUser()
+ console.log(user)
+  if (!user){
+    redirect("/login")
+  }
+  
   return (
     <div>
-     hey this is user
+     <User user={user}/>
     </div>
   )
 }

@@ -37,7 +37,7 @@ const page = () => {
     }
 
     const res = await login(user)
-    console.log(res)
+    
 
   }
 

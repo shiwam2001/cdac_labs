@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react'
 
 import { Role } from '@prisma/client';
-import createUser from '../actions/action1';
+import createUser, { Action } from '../actions/action1';
+import { redirect } from 'next/navigation';
 
 const page = () => {
 
@@ -17,9 +18,10 @@ const page = () => {
 
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
     setFormData((prev) => ({ ...prev, [id]: value }))
+
   }
 
   const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
@@ -42,10 +44,25 @@ const page = () => {
       email,
       employeeId,
       password,
-      role: 'USER' as Role
+      role: 'USER' as Role,
+      action: "Pending" as Action
     }
+
     const res = await createUser(newUser)
-    console.log("user created: ", res)
+
+    if (res) {
+      alert("User created successfully")
+      setFormData({
+        name: '',
+        email: '',
+        employeeId: '',
+        password: '',
+        confirmPassword: '',
+      }
+      )
+    } else{
+      alert("Registration failed")
+    }
   }
 
 

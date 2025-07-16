@@ -6,6 +6,7 @@ import Link from 'next/link'
 const page = async() => {
 
 const user =  await getCurrentUser()
+
 console.log("user: ", user)
 
 
