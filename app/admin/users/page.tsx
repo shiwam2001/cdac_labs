@@ -1,14 +1,14 @@
 import React   from 'react'
-import {  getUsers } from '../../actions/action1'
+import {  getLabsDetail, getUsers } from '../../actions/action1'
 import User from './User'
-
 
 const userModule = async () => {
   
-    const employee = await getUsers()
+  const employee = await getUsers()
+  const labDetails = await getLabsDetail()
 
   return (
-    <User  employee={employee} />
+    <User  employee={employee} labDetails = {labDetails} />
   )
 }
 

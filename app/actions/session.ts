@@ -10,7 +10,10 @@ interface User {
     name: string;
     email: string;
     employeeId: string;
-    role: Role
+    department:string;
+    role: Role;
+    action:string
+    id:number
 }
 
 export async function createSession(signedUser: User) {
@@ -35,6 +38,7 @@ export async function createSession(signedUser: User) {
     if (signedUser.role === 'ADMIN') {
         redirect("/admin")
     }else if (signedUser.role === 'USER') {
+
         redirect("/user")
     }
 }

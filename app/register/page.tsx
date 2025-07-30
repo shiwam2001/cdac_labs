@@ -13,9 +13,10 @@ const page = () => {
     name: '',
     email: '',
     employeeId: '',
+    department:'',
     password: '',
     confirmPassword: '',
-
+    
   })
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,9 +28,9 @@ const page = () => {
   const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const { name, email, employeeId, password, confirmPassword } = formData
+    const { name, email, employeeId, department, password, confirmPassword } = formData
 
-    if (!name || !email || !employeeId || !password || !confirmPassword) {
+    if (!name || !email || !employeeId || !department || !password || !confirmPassword) {
       alert("All fields are required")
       return
     }
@@ -43,6 +44,7 @@ const page = () => {
       name,
       email,
       employeeId,
+      department,
       password,
       role: 'USER' as Role,
       action: "Pending" as Action
@@ -56,6 +58,7 @@ const page = () => {
         name: '',
         email: '',
         employeeId: '',
+        department:'',
         password: '',
         confirmPassword: '',
       }
@@ -69,7 +72,7 @@ const page = () => {
   return (
     <div className='flex register '>
 
-      <div className='flex flex-col justify-center  m-auto gap-8  rounded-lg   px-8 p-8 mt-20'>
+      <div className='flex flex-col justify-center  m-auto gap-8  rounded-lg   px-8 p-8 '>
 
         <h1 className='text-4xl text-center '>Register at CDAC Labs</h1>
         <form onSubmit={handleSubmit}>
@@ -83,6 +86,7 @@ const page = () => {
               onChange={handleChange}
               className='border border-gray-300  px-3 py-2 text-md rounded'
               placeholder='Full Name'
+              required
             />
 
             <label htmlFor="employeeId">Employee ID</label>
@@ -92,8 +96,8 @@ const page = () => {
               onChange={handleChange}
               className='border border-gray-300  px-3 py-2 text-md rounded'
               placeholder='Employee Id'
+              required
             />
-
 
             <label htmlFor="email">Email address</label>
             <input
@@ -101,18 +105,29 @@ const page = () => {
               id='email'
               name={formData.email}
               onChange={handleChange}
+              required
               className='border border-gray-300  px-3 py-2 text-md rounded' placeholder='Email' />
+
+              <label htmlFor="department">Department</label>
+              <select name={formData.department} id='department' className='p-2'>
+                <option value="E&T">Education & Training</option>
+                <option value="department_1">Department 1</option>
+                <option value="department_2">Department 2</option>
+                <option value="department_3">Department 3</option>
+                <option value="department_4">Department 4</option>
+                <option value="department_5">Department 5</option>
+              </select>
 
             <label htmlFor="password">Password</label>
             <div className='relative flex items-center'>
 
-              <input type={showPassword ? "text" : 'password'} id='password' name={formData.password} onChange={handleChange} className='relative border border-gray-300 w-full  px-3 py-2 text-md rounded' placeholder='Password' />
+              <input type={showPassword ? "text" : 'password'} required id='password' name={formData.password} onChange={handleChange} className='relative border border-gray-300 w-full  px-3 py-2 text-md rounded' placeholder='Password' />
               <button type='button' className='absolute right-2 top-2 text-gray-500 hover:text-gray-700' onClick={() => setShowPassword((prev => !prev))}>{showPassword ? "Hide" : 'View'}</button>
             </div>
 
             <label htmlFor="confirmPassword">Confirm password</label>
             <div className='relative flex items-center'>
-              <input type={showPassword ? "text" : 'password'} id='confirmPassword' name={formData.confirmPassword} onChange={handleChange} className='border border-gray-300 w-full px-3 py-2 text-md rounded' placeholder='Confirm Password' />
+              <input required type={showPassword ? "text" : 'password'} id='confirmPassword' name={formData.confirmPassword} onChange={handleChange} className='border border-gray-300 w-full px-3 py-2 text-md rounded' placeholder='Confirm Password' />
               <button type='button' className='absolute right-2 top-2 text-gray-500 hover:text-gray-700' onClick={() => setShowPassword((prev => !prev))}>{showPassword ? "Hide" : 'View'}</button>
             </div>
           </div>

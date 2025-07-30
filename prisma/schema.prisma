@@ -19,10 +19,25 @@ model User {
   name       String
   email      String   @unique
   password   String
+  department String
   role       Role     @default(USER)
-  action     Action    @default(PENDING)
+  action     Action   @default(PENDING)
   createdAt  DateTime @default(now())
+
+  lab        Lab?     @relation(fields: [labId], references: [labNumber])
+  labId      Int?     @unique
 }
+
+model Lab {
+  labId  Int @default(autoincrement())
+  labNumber     Int    @id @unique
+  labName       String
+  custodianName String
+  createdAt     DateTime @default(now())
+
+  assignedTo    User?   
+}
+
 
 enum Action {
   PENDING
@@ -34,3 +49,4 @@ enum Role {
   ADMIN
   USER
 }
+

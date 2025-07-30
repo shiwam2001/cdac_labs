@@ -1,25 +1,35 @@
 'use server'
-import { PrismaClient} from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
 import { createSession, verifySession } from "./session";
 
 const prisma = new PrismaClient();
 
 export type Role = 'ADMIN' | "USER"
 
-export type Action = 'PENDING' | 'REJECTED' | 'APPROVED' 
+export type Action = 'PENDING' | 'REJECTED' | 'APPROVED'
 
 interface User {
-    
     name: string;
     email: string;
     employeeId: string;
+    department: string;
     password: string;
     role: Role
-    action:Action
+    action: Action
+}
+
+interface lab {
+    labNumber: number
+    labName: string
+    custodianName: string
+}
+
+interface labid {
+    labId: number
+    
 }
 
 
@@ -28,34 +38,32 @@ interface UserResponse {
     password: string;
 }
 
-export default async function createUser(data:User){
+export default async function createUser(data: User) {
 
-    const {name, email, employeeId, password, role} =  data
+    const { name, email, employeeId, department, password, role } = data
 
-    if (!name || !email || !employeeId || !password || !role ){
+    if (!name || !email || !employeeId || !department || !password || !role) {
         throw new Error("All fields are required")
     }
 
-    const hashedPassword = await bcrypt.hash(password,10)
-
+    const hashedPassword = await bcrypt.hash(password, 10)
 
     const user = await prisma.user.createMany({
-        data:{
+        data: {
             name,
             email,
             employeeId,
+            department,
             password: hashedPassword,
-            role:role,
-            action:"PENDING"
+            role: role,
+            action: "PENDING"
         }
     })
     return user
-
-      
 }
 
 
-export async function login(data:UserResponse) {
+export async function login(data: UserResponse) {
     const { email, password } = data;
 
     if (!email || !password) {
@@ -76,17 +84,17 @@ export async function login(data:UserResponse) {
         throw new Error("Invalid password");
     }
 
-    
-
     const signedUser = {
+        id: user.id,
         name: user.name,
         email: user.email,
         employeeId: user.employeeId,
+        department: user.department,
         role: user.role,
-        action:user.action
+        action: user.action
     }
 
-    if(signedUser.action !== "APPROVED" ){
+    if (signedUser.action !== "APPROVED") {
         throw new Error("You are not authorised.")
     }
 
@@ -95,37 +103,25 @@ export async function login(data:UserResponse) {
 }
 
 export async function getUsers() {
-  
-  const users = await prisma.user.findMany({
-    where:{
-        role:"USER"
-    }
-  })
-  
- 
-  return users.map(user=>{
-    return {
-        name: user.name,
-        email: user.email,
-        employeeId: user.employeeId,
-        role: user.role,
-        action: user.action
-    }
-  })
+    const users = await prisma.user.findMany({
+        where: {
+            role: "USER"
+        }
+    })
+
+
+    return users.map(user => {
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            employeeId: user.employeeId,
+            department: user.department,
+            role: user.role,
+            action: user.action
+        }
+    })
 }
-
-
- 
-// export async function getUserName(){
-//     const user = await verifySession();
-    
-//     if (!user) {
-//         throw new Error("Unauthorized");
-//     }
-    
-//     return user.name;
-// }
-
 
 export const getCurrentUser = async () => {
     const user = await verifySession();
@@ -134,7 +130,14 @@ export const getCurrentUser = async () => {
         return null;
     }
 
-    return user;
+    console.log(user.id)
+    const newUser = await prisma.user.findFirst({
+        where: {
+            email: user.email
+        }
+    })
+
+    return newUser;
 }
 
 export async function userLogout() {
@@ -150,43 +153,72 @@ export async function userLogout() {
     return { message: "Logged out successfully" };
 }
 
-export const approveUser = async ({email}:{email:string}) =>{
-     const user = await prisma.user.update({
-        where:{
-            email:email
+export const approveUser = async ({ email }: { email: string }) => {
+    const user = await prisma.user.update({
+        where: {
+            email: email
         },
-        data:{
-          action:"APPROVED"
+        data: {
+            action: "APPROVED"
         }
-     })
+    })
 
-     return user
+    return user
 }
 
-
-
-export const rejectUser = async ({email}:{email:string}) =>{
+export const rejectUser = async ({ email }: { email: string }) => {
     const user = await prisma.user.update({
-        where:{
-            email:email
+        where: {
+            email: email
         },
-        data:{
-            action:"REJECTED"
+        data: {
+            action: "REJECTED"
         }
     })
     return user
 }
 
+export const createLab = async (data: lab) => {
 
+    const { labNumber, labName, custodianName } = data;
 
+    if (!labNumber || !labName || !custodianName) {
+        throw new Error("these feilds are not come here")
+    }
 
+    const resultedLab = await prisma.lab.createMany({
+        data: {
+            labNumber: Number(labNumber),
+            labName,
+            custodianName,
+        },
+    });
 
+    return resultedLab;
+};
 
+export const getLabsDetail = async () => {
+    const resulted = await prisma.lab.findMany()
+    return resulted
 
+}
 
+export const deleteLab=async({labNumber}:{labNumber:number})=>{
+    const deletedLab=await prisma.lab.delete({
+       where:{
+        labNumber:labNumber
+       }
+    })   
+    
+}
 
-
-
-
-
-
+export const updateCustodianName = async ({labNumber,custodianName}:{labNumber:number,custodianName:string}) =>{
+   return prisma.lab.update({
+    where:{
+        labNumber:labNumber
+    },
+    data:{
+        custodianName:custodianName
+    }
+   })
+}
