@@ -1,16 +1,17 @@
 "server only"
 
 import jwt from "jsonwebtoken";
-import { Role } from './action1';
+
 import { redirect } from 'next/navigation';
 import { cookies } from "next/headers";
+import { Role } from "@prisma/client";
 
 
 interface User {
     name: string;
     email: string;
     employeeId: string;
-    department:string;
+    department:number;
     role: Role;
     action:string
     id:number
@@ -38,8 +39,11 @@ export async function createSession(signedUser: User) {
     if (signedUser.role === 'ADMIN') {
         redirect("/admin")
     }else if (signedUser.role === 'USER') {
-
         redirect("/user")
+    }else if(signedUser.role === "CUSTODIAN"){
+        redirect("/custodian")
+    }else{
+        redirect("/")
     }
 }
 
@@ -58,10 +62,9 @@ export async function verifySession() {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-
     if (typeof decoded === 'object' && 'email' in decoded) {
         return decoded as User;
-    }
+    } 
 
     return null;
 }

@@ -18,26 +18,54 @@ model User {
   employeeId String   @unique
   name       String
   email      String   @unique
-  password   String
-  department String
+  password   String  
+  departmentId Int
+  department    Department  @relation(fields: [departmentId], references: [departmentId])
   role       Role     @default(USER)
   action     Action   @default(PENDING)
+  labs Lab[]  @relation("CustodianLabs")
   createdAt  DateTime @default(now())
+  assignedLabs AssignedLab[]
 
-  lab        Lab?     @relation(fields: [labId], references: [labNumber])
-  labId      Int?     @unique
+  items          Items[]
 }
 
 model Lab {
-  labId  Int @default(autoincrement())
-  labNumber     Int    @id @unique
-  labName       String
-  custodianName String
+  labId  Int @id  @unique @default(autoincrement())
+  labNumber     Int?    
+  labName       String?
+  custodianName String?
   createdAt     DateTime @default(now())
+  custodianId  String?  
+  custodian    User?      @relation("CustodianLabs", fields: [custodianId], references: [email])
+  
+  departmentId  Int
+  
+  department    Department  @relation(fields: [departmentId], references: [departmentId])
+  assignedLabs  AssignedLab[] 
 
-  assignedTo    User?   
+  items          Items[]
+  
+}   
+
+model Department {
+  departmentId Int @id @unique @default(autoincrement())
+  department_Name String @unique
+  labs    Lab[]
+  users  User[]
+  createdAt DateTime @default(now())
+  items          Items[]
 }
 
+model AssignedLab {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [email], references: [email])
+  email  String
+  lab    Lab  @relation(fields: [labId], references: [labId])
+  labId  Int
+
+  @@unique([email, labId]) // Prevent duplicate assignment
+}
 
 enum Action {
   PENDING
@@ -48,5 +76,45 @@ enum Action {
 enum Role {
   ADMIN
   USER
+  CUSTODIAN
 }
 
+enum Activety {
+  DELETE
+  UPDATE
+  TRANSFER
+  ADDED
+}
+
+model Items {
+  id      Int  @id @default(autoincrement())
+  departmentId  Int 
+  labId Int
+  assignedUserId Int
+  custodianName String
+  quantity  Int? @default(1)
+  deviceNumber  String?
+  deviceType  String
+  dateNow   DateTime @default(now())
+  dateTill   DateTime?
+
+  department Department @relation(fields: [departmentId],references: [departmentId])
+  lab Lab @relation(fields:[labId],references: [labId])
+  assignedBy User @relation(fields:[assignedUserId],references: [id])
+  status Action   @default(PENDING)
+  activety   Activety @default(ADDED)
+
+  @@map("items")
+}
+
+// model ItemRequest {
+//   id     Int   @id @default(autoincrement())
+//   itemId    Int
+//   newDepartmentId   Int
+//   newLabId     Int
+//   status   Action @default(PENDING)
+//   requestedAt    DateTime @default(now())
+//   activety   Activety @default(ADDED)
+
+//   item Items @relation(fields: [itemId], references: [id])
+// }

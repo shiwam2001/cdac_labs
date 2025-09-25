@@ -4,146 +4,407 @@ import React, { useState } from 'react'
 import { FaRegEdit } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { MdAssignmentInd } from "react-icons/md";
+import { Department, Users } from './main';
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+import { Button } from '@/components/ui/button';
+
+import { toast } from 'sonner';
+import { Action, Role } from '@prisma/client';
+import { LabDetails } from '../users/User';
+import { assignLab } from '@/app/actions/action2';
 
 export interface LabType {
-    labId: number;
-    labNumber: number;
-    labName: string;
-    custodianName: string;
+  labId: number;
+  labNumber: number;
+  labName: string;
+  custodianName: string;
+}
+
+export type labDetail = {
+  labId: number
+  labNumber: number | null
+  labName: string | null
+  custodian:{ createdAt: Date; departmentId: number; name: string; email: string; id: number; role: Role; employeeId: string; password: string; action: Action; } | null
+  createdAt: Date
+  departmentId: number
+  department: {
+    department_Name: string
+  }
+  assignedLabs: {
+    labId: number; email: string; id: number;
+  }[]
+}
+
+// type User = {
+//   id: number;
+//   name: string;
+//   email: string;
+//   employeeId: string;
+//   department: number;
+//   departmentName: string;
+//   role: Role;
+//   action: Action;
+// };
+
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  employeeId: string;
+  department: Department;
+  departmentName: string;
+  role: Role;
+  action: Action;
+}
+
+type props = {
+  departmentDetails: Department[]
+  labDetail: labDetail[]
+  users: Users[]
+  custodianUsers: Users[]
+}
+
+const details = ({ users, custodianUsers, labDetail, departmentDetails }: props) => {
+  const [showModal, setShowModal] = useState(false)
+  const [custodianName, setCustodianName] = useState('')
+  const [selectedLab, setSelectedLab] = useState<labDetail | null>(null)
+  const [deptDetail, setDeptDetail] = useState(departmentDetails)
+  const [open, setOpen] = useState(false)
+  const [openDelete, setOpenDelete] = useState(false)
+  const [labId, setLabId] = useState<number>(0)
+  const [assignedUser, setAssignedUser] = useState<string>('')
+  const [happen, setHappen] = useState(false)
+
+  const handleDelete = async (labId: number) => {
+
+    await deleteLab({ labId })
+    setOpenDelete(false)
+    toast("Laboratory deleted successfully!")
+
   }
 
-type labDetail = {
-    labId: number;
-    labName: string;
-    labNumber: number;
-    custodianName: string;
+  const updateName = async () => {
+    if (!selectedLab) {
+      alert('Here not available selected lab')
+    }
+    if (!selectedLab || !selectedLab.labId) return;
 
-}
-type props = {
-    labDetail: labDetail[]
-}
+    const updateCustodian = await updateCustodianName({
+      labId: selectedLab?.labId,
+      custodianName: custodianName
+    })
 
-const details = ({ labDetail }: props) => {
-    const [showModal, setShowModal] = useState(false)
-    const [custodianName,setCustodianName] = useState('')
-    const [selectedLab,setSelectedLab] = useState<LabType | null>(null)
+    setOpen(false)
+    setShowModal(false)
+    setCustodianName('')
+    toast("Custodian name updated successfully");
 
-    const handleDelete = async (labNumber: number) => {
-        const result = confirm("Are you want to Deleted the laboratory.")
+  }
 
-        if (result) {
-            await deleteLab({ labNumber })
-        }
+  const handleAssignedUser = async () => {
+    console.log("hello")
+    setHappen(true)
+
+    if (!labId || !assignedUser) {
+      alert("here all feilds required!")
+      return
     }
 
-    const updateName = async () => {
-        if(!selectedLab){
-            alert('Here not available selected lab')
-        }
-        if (!selectedLab || !selectedLab.labNumber) return;
-
-        const updateCustodian = await updateCustodianName({
-            labNumber: selectedLab?.labNumber,
-            custodianName: custodianName
-        })
-
-        alert("Custodian name updated successfully");
-        setShowModal(false)
-        setCustodianName('')
-
+    const res = await assignLab(assignedUser, labId)
+    if (res) {
+      setAssignedUser('')
+      setLabId(0)
+      setHappen(false)
+      toast("Laboratory has assigned to user successfully.")
     }
+  }
 
+  return (
+    <>
+      <div className='mx-4 p-2 bg-white rounded-lg h-screen flex flex-col my-3'>
+        <h1 className='text-xl font-medium  ml-1 pb-2'>Laboratory Details:</h1>
+        <div className='border-2 rounded-xl '>
 
-    return (
-        <div className='mx-3'>
-            <h1 className='mt-1  text-xl font-medium  pb-2'>Created Laboratory Details:</h1>
-            <div className='border-2   rounded-xl h-screen overflow-y-auto  '>
-                <table className='w-full  text-lg  text-left'>
-                    <thead className='sticky top-0'>
-                        <tr >
-                            <th className='p-2   border-b w-1/8 '>Lab id</th>
-                            <th className='p-2 pl-6  border-b w-1/6'>Lab Number</th>
-                            <th className='p-2 pl-6  border-b w-1/6'>Lab Name</th>
-                            <th className='p-2 border-b w-1/5'>Custodian Name</th>
-                            <th className='p-2 border-b w-1/8 '>Actions</th>
-                        </tr>
-                    </thead>
-                    {labDetail.length === 0 ? (
-                        <tbody>
-                            <tr >
-                                <td colSpan={5} className='text-center text-2xl py-4 text-gray-500'>Here no any lab created...</td>
-                            </tr>
-                        </tbody>
-                    ) : (
-                        <tbody className='text-lg font-medium'>
-                            {labDetail.map((item) =>
-                                <tr key={item.labId}>
-                                    <td className='p-2 pl-6 border-b'>{item.labId}</td>
-                                    <td className='p-2 pl-6 border-b'>{item.labNumber}</td>
-                                    <td className='p-2 pl-6 border-b'>{item.labName}</td>
-                                    <td className='p-2  border-b'>{item.custodianName}</td>
-                                    <td className='p-2  border-b'>
-                                        <div className='flex gap-5'>
-                                            <div className='wrapper'>
-                                                <span className='tooltip'>Update custodian name</span>
-                                                <button onClick={() => { setSelectedLab(item); setShowModal(true); }} className='cursor-pointer '><FaRegEdit size={20} /></button>
-                                            </div>
+          <Table className="text-medium">
+            <TableHeader className=" bg-white">
+              <TableRow >
+                <TableHead className="w-[12%]">Lab id</TableHead>
+                <TableHead className="w-[16%]">Lab Number</TableHead>
+                <TableHead className="w-[16%]">Lab Name</TableHead>
+                <TableHead className="w-[16%]">Department</TableHead>
+                <TableHead className="w-[20%]">Custodian Name</TableHead>
+                <TableHead className="w-[15%]">Assigned to</TableHead>
+                <TableHead className="w-[20%] text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
 
-                                            <div className='wrapper'>
-                                                <span className='tooltip'>Assign Laboratory</span>
+            {labDetail.length === 0 ? (
+              <TableBody>
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center text-2xl py-4 text-gray-500">
+                    Here no any lab created...
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            ) : (
+              <TableBody>
+                {labDetail.map((item) => (
+                  <TableRow key={item.labId}>
+                    <TableCell>{item.labId}</TableCell>
+                    <TableCell>{item.labNumber}</TableCell>
+                    <TableCell>{item.labName}</TableCell>
+                    <TableCell>{item.department.department_Name}</TableCell>
+                    <TableCell>{item.custodian?.name}</TableCell>
 
-                                                <button className='cursor-pointer'><MdAssignmentInd size={20} /></button>
-                                            </div>
-
-                                            <div className='wrapper'>
-                                                <span className='tooltip bg-red-400 text-white'>Delete Laboratory</span>
-
-                                                <button onClick={() => handleDelete(item.labNumber)} className='cursor-pointer'>< MdDeleteForever size={20} /> </button>
-                                            </div>
-
-                                        </div>
-                                    </td>
-                                </tr>
-                            )}
-
-                        </tbody>
-                    )}
-
-
-                </table>
-            </div>
-            {showModal && (
-                <div className='fixed inset-0  bg-opacity-10 flex items-center justify-center z-50'>
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-[30%]">
-                        <h2 className="text-xl font-semibold mb-4">Change Custodian</h2>
-                        <input
-                            type="text"
-                            className="w-full p-2 border border-gray-300 rounded mb-4"
-                            value={custodianName}
-                            onChange={(e) => setCustodianName(e.target.value)}
-                            placeholder="Enter new custodian name"
-                        />
-                        <div className="flex justify-end gap-2">
-                            <button
-                                className="px-4 py-2 bg-gray-300 rounded"
-                             onClick={() => setShowModal(false)}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className="px-4 py-2 bg-blue-600 text-white rounded"
-                            onClick={updateName}
-                            >
-                                Save
-                            </button>
+                    <TableCell>
+                      {item.assignedLabs.length === 0 ? (
+                        <span className="text-gray-500">null</span>
+                      ) : (
+                        <div className="flex flex-col gap-1">
+                          {item.assignedLabs.map((dats, index) => (
+                            <span key={index}>{dats.email}</span>
+                          ))}
                         </div>
-                    </div>
+                      )}
+                    </TableCell>
 
-                </div>
+                    <TableCell >
+                      <div className="flex mr-4 gap-4">
 
-            )
-            }
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                           <Dialog onOpenChange={setOpen} >
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    onClick={() => {
+                                      setSelectedLab(item)
+                                      setOpen(true)
+                                    }}
+                                    className="cursor-pointer"
+                                  >
+                                    <FaRegEdit size={20} />
+                                  </Button>
+                                </DialogTrigger>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Update custodian name</p>
+                              </TooltipContent>
+                            </Tooltip>
+
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle className='text-center'>Edit your <b><u>custodian</u></b> </DialogTitle>
+                                <DialogDescription>
+                                  This action cannot be undone. This will permanently delete your account
+                                  and remove your data from our servers.
+                                </DialogDescription>
+
+                                <Select
+                                  value={custodianName}
+                                  onValueChange={(value) => setCustodianName(value)} // 👈 update state
+                                >
+                                  <SelectTrigger className="w-full p-2 border border-gray-300 rounded mb-4">
+                                    <SelectValue placeholder="Edit Custodian" />
+                                  </SelectTrigger>
+                                  <SelectContent className='rounded-xl'>
+                                    <SelectItem value=".." disabled>
+                                    </SelectItem>
+                                    {custodianUsers.map((custodian) => (
+                                      <SelectItem key={custodian.id} value={custodian.name}>
+                                        {custodian.name } -@{custodian.email}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                  <Button onClick={updateName}>Save</Button>
+                                </Select>
+
+                              </DialogHeader>
+                            </DialogContent>
+                          </Dialog>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Add to library</p>
+                          </TooltipContent>
+                        </Tooltip>
+
+
+                        <TooltipProvider>
+                          {/* <Dialog open={open} onOpenChange={setOpen} >
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    onClick={() => {
+                                      setSelectedLab(item)
+                                      setOpen(true)
+                                    }}
+                                    className="cursor-pointer"
+                                  >
+                                    <FaRegEdit size={20} />
+                                  </Button>
+                                </DialogTrigger>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Update custodian name</p>
+                              </TooltipContent>
+                            </Tooltip>
+
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle className='text-center'>Edit your <b><u>custodian</u></b> </DialogTitle>
+                                <DialogDescription>
+                                  This action cannot be undone. This will permanently delete your account
+                                  and remove your data from our servers.
+                                </DialogDescription>
+
+                                <Select
+                                  value={custodianName}
+                                  onValueChange={(value) => setCustodianName(value)} // 👈 update state
+                                >
+                                  <SelectTrigger className="w-full p-2 border border-gray-300 rounded mb-4">
+                                    <SelectValue placeholder="Edit Custodian" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value=".." disabled>
+                                    </SelectItem>
+                                    {custodianUsers.map((custodian) => (
+                                      <SelectItem key={custodian.id} value={custodian.name}>
+                                        {custodian.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                  <Button onClick={updateName}>Save</Button>
+                                </Select>
+
+                              </DialogHeader>
+                            </DialogContent>
+                          </Dialog> */}
+  
+                          <Dialog>
+                            <Tooltip>
+                              <TooltipTrigger asChild >
+                                <DialogTrigger asChild>
+                                  <Button className="cursor-pointer"
+                                    onClick={() => setLabId(item.labId)}
+                                  >
+                                    <MdAssignmentInd size={20} />
+                                  </Button>
+                                </DialogTrigger>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Assign Laboratory</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <DialogContent>
+                              <DialogTitle className='text-center'>Here you can <b>Assigned a Laboratory</b> to User.</DialogTitle>
+                              <DialogDescription>
+                                Here you can assign a laboratory to user that he can access the perticuler laboratory which is assigned by Admin.
+                              </DialogDescription>
+                              <Select
+                                value={assignedUser}
+                                onValueChange={(value) => setAssignedUser(value)}
+
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Here you can select your user" />
+                                </SelectTrigger>
+                                <SelectContent className='w-full'>
+                                  {users.length === 0 ? (
+                                    <SelectItem value=''>here no any Users</SelectItem>
+                                  ) : (
+                                    users.map((item, index) =>
+                                      <SelectItem className='w-[100%]' key={index} value={item.email} >{item.name} -@{item.email}</SelectItem>
+                                    )
+                                  )}
+                                </SelectContent>
+                                <Button className='cursor-pointer' onClick={handleAssignedUser}>{happen ? "Processing..." : "Confirm"}</Button>
+
+                              </Select>
+                            </DialogContent>
+                          </Dialog>
+                        </TooltipProvider>
+
+
+                        {/* <Tooltip>
+                        <TooltipTrigger asChild>
+                          
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Assign Laboratory</p>
+                        </TooltipContent>
+                      </Tooltip> */}
+
+                        <TooltipProvider>
+                          <Dialog  onOpenChange={setOpenDelete}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    // onClick={() => handleDelete(item.labId)}
+                                    className="cursor-pointer"
+                                    onClick={() => setOpenDelete(true)}
+                                  >
+                                    <MdDeleteForever size={20} />
+                                  </Button>
+                                </DialogTrigger>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete Lab</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <DialogContent>
+                              <DialogTitle>Are you sure to <u><b>Deleted the Laboratory</b></u>? </DialogTitle>
+                              <DialogDescription>
+                                This action cannot be undone. This will permanently delete your <b>Laboratory</b>
+                                and remove this data from our servers.
+                              </DialogDescription>
+                              <Button onClick={() => handleDelete(item.labId)}>Delete<MdDeleteForever size={20} /></Button>
+                            </DialogContent>
+
+                          </Dialog>
+                        </TooltipProvider>
+                        {/* <Tooltip>
+                        <TooltipTrigger asChild>
+                          
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Delete Laboratory</p>
+                        </TooltipContent>
+                      </Tooltip> */}
+
+
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            )}
+          </Table>
+
         </div>
-    )
+      </div>
+    </>
+  )
 }
 export default details
