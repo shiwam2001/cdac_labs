@@ -5,7 +5,7 @@ import User from './User'
 
 const page = async() => {
    const users = await getUsers()
-   console.log(users)
+   
    const labs =   await getLabsDetail()
    const departmentDetails = await getDepartmentDetail()
   return (

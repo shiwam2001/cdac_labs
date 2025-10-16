@@ -1,7 +1,7 @@
 "use server";
 import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
-
+import { writeLog } from "@/lib/logger";
 import { cookies } from "next/headers";
 import { createSession, verifySession } from "./session";
 import { revalidatePath } from "next/cache";
@@ -66,23 +66,24 @@ export async function login(data: UserResponse) {
   const { email, password } = data;
 
   if (!email || !password) {
+    writeLog(`FAILED LOGIN: Missing email or password`);
     return { success: false, message: "Email and password are required" };
   }
 
   const user = await prisma.user.findUnique({
     where: { email },
-    include: {
-      department: true,
-    },
+    include: { department: true },
   });
 
   if (!user) {
+    writeLog(`FAILED LOGIN: User not found - ${email}`);
     return { success: false, message: "User not found" };
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
+    writeLog(`FAILED LOGIN: Invalid password - ${email}`);
     return { success: false, message: "Invalid password" };
   }
 
@@ -98,27 +99,32 @@ export async function login(data: UserResponse) {
   };
 
   if (signedUser.role === "USER" && signedUser.action !== "APPROVED") {
+    writeLog(`UNAUTHORIZED ACCESS: ${signedUser.email} attempted login`);
     return { success: false, message: "You are not authorised." };
   }
+  console.log(`[${new Date().toISOString()}] SUCCESSFUL LOGIN: ${signedUser.email} (${signedUser.role})`);
 
-  // create session
+
   await createSession(signedUser);
+  writeLog(`SUCCESSFUL LOGIN: ${signedUser.email} (${signedUser.role})`);
+
+  return { success: true, user: signedUser };
 }
 
 export async function getUsers() {
-  const users = await prisma.user.findMany({
-    where: {
-      role: {
-        in: ["USER", "CUSTODIAN"],
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        role: {
+          in: ["USER", "CUSTODIAN"],
+        },
       },
-    },
-    include: {
-      department: true,
-    },
-  });
+      include: {
+        department: true,
+      },
+    });
 
-  return users.map((user) => {
-    return {
+    const formattedUsers = users.map((user) => ({
       id: user.id,
       name: user.name,
       email: user.email,
@@ -127,8 +133,24 @@ export async function getUsers() {
       departmentName: user.department?.department_Name,
       role: user.role,
       action: user.action,
-    };
-  });
+    }));
+
+    // Logging like login function
+    console.log(
+      `[${new Date().toISOString()}] FETCHED USERS: ${formattedUsers.length} users`
+    );
+    writeLog(
+      `FETCHED USERS: ${formattedUsers.length} users`
+    );
+
+    return formattedUsers;
+  } catch (error: any) {
+    console.error(
+      `[${new Date().toISOString()}] ERROR FETCHING USERS: ${error.message}`
+    );
+    writeLog(`ERROR FETCHING USERS: ${error.message}`);
+    return [];
+  }
 }
 
 export const getCurrentUser = async () => {
@@ -332,7 +354,21 @@ export const getDepartment = async ()=>{
     select:{
       department_Name:true,
       departmentId:true,
-      labs:true
+      labs:{
+        select:{
+          labName:true,
+          labNumber:true,
+          labId:true,
+          custodian:{
+            select:{
+              email:true,
+              name:true,
+              id:true
+            }
+          }
+        }
+      }
     }
   })
 }
+  

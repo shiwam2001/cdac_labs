@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { MinimalUser } from "./page";
+import { MinimalUser } from "./User";
 import { Mail, User as UserIcon, IdCard, Building } from "lucide-react";
 import {
   Dialog,
@@ -12,9 +12,23 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Action, Role } from "@prisma/client";
+
+interface User{
+   id: number; 
+   employeeId: string; 
+   name: string; 
+   email: string; 
+   departmentId: number; 
+   role: Role; 
+   action: Action; 
+   createdAt: Date; 
+   department: { departmentId: number; createdAt: Date; department_Name: string; 
+}
+}
 
 type Props = {
-  user: MinimalUser;
+  user: User;
 };
 
 const BasicInformation = ({ user }: Props) => {
@@ -34,7 +48,7 @@ const BasicInformation = ({ user }: Props) => {
   };
 
   return (
-    <div className="w-full mt-10">
+    <div className="w-full mt-5">
       <div className="bg-white rounded-2xl shadow-lg p-6 transition hover:shadow-xl w-full">
         {/* Header with Avatar + Edit */}
         <div className="flex items-center justify-between border-b pb-4 mb-4">

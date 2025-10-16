@@ -19,7 +19,6 @@ export const createDepartment = async ({
     },
   });
 };
-
 export const getDepartmentDetail = async () => {
   return await prisma.department.findMany();
 };
@@ -30,7 +29,6 @@ export const getLabsOfDepartment = async (departmentId: Number) => {
     },
   });
 };
-
 export const assignLab = async (email: string, labId: number) => {
   if (!email || !labId) {
     throw new Error("All fields are reqiured.");
@@ -43,7 +41,6 @@ export const assignLab = async (email: string, labId: number) => {
     },
   });
 };
-
 export const getCustodianUsers = async () => {
   return await prisma.user.findMany({
     where: {
@@ -51,7 +48,6 @@ export const getCustodianUsers = async () => {
     },
   });
 };
-
 export async function getApproveUsers() {
     const users = await prisma.user.findMany({
         where:{

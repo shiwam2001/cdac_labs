@@ -1,5 +1,5 @@
 "use server";
-import { Action, Activety, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 const prisma = new PrismaClient();
@@ -15,7 +15,7 @@ export const addItems = async (data: {
   custodianName: string;
   deviceNumber: string;
   deviceName: string;
-  deviceQuantity:number;
+  deviceQuantity: number;
   dateTill?: Date | null;
 }) => {
   revalidatePath("user/inventory");
@@ -26,13 +26,12 @@ export const addItems = async (data: {
       assignedUserId: data.assignedUserId,
       custodianName: data.custodianName,
       deviceNumber: data.deviceNumber,
-      quantity:data.deviceQuantity,
+      quantity: data.deviceQuantity,
       deviceType: data.deviceName,
       dateTill: data.dateTill || null,
     },
   });
 };
-
 export const getAddedItems = async (userId: number) => {
   return await prisma.items.findMany({
     where: {
@@ -57,12 +56,8 @@ export const getAddedItems = async (userId: number) => {
     },
   });
 };
-
 export async function getItemsDetails() {
   return await prisma.items.findMany({
-    // where:{
-    //   labId:
-    // },
     include: {
       department: {
         select: {
@@ -76,7 +71,6 @@ export async function getItemsDetails() {
     },
   });
 }
-
 export async function getCustodianItems(userId: string) {
   try {
     const items = await prisma.items.findMany({
@@ -88,6 +82,7 @@ export async function getCustodianItems(userId: string) {
       include: {
         lab: true,
         assignedBy: true,
+        department: true,
       },
     });
     return items;
@@ -96,15 +91,14 @@ export async function getCustodianItems(userId: string) {
     throw new Error("Failed to fetch custodian items");
   }
 }
-
 export async function getItemsApproved(itemId: number, activety: string) {
   if (activety === "DELETE") {
-      const items = await prisma.items.delete({
-        where:{
-          id:itemId
-        }
-      })
-      return {items,status:"success"}
+    const items = await prisma.items.delete({
+      where: {
+        id: itemId,
+      },
+    });
+    return { items, status: "success" };
   } else {
     const items = await prisma.items.update({
       where: {
@@ -118,7 +112,6 @@ export async function getItemsApproved(itemId: number, activety: string) {
     return items;
   }
 }
-
 export async function getItemLogs() {
   return await prisma.items.findMany({
     include: {
@@ -137,51 +130,94 @@ export async function getItemLogs() {
     },
   });
 }
-
 export async function updateItem(selectedItemId: number, formData: FormData) {
-  if (!selectedItemId || !formData) {
-    return console.error("Data not come here");
-  }
-  const result = await prisma.items.updateMany({
-    where: {
-      id: selectedItemId,
-    },
-    data: {
-      deviceNumber: formData.deviceNumber,
-      deviceType: formData.deviceType,
-      status: "PENDING",
-      activety: "UPDATE",
-    },
-  });
-  revalidatePath("user/inventory");
-  return result;
-}
+  try {
+    if (!selectedItemId) {
+      console.error("❌ No item ID provided");
+      return null;
+    }
 
+    const { deviceNumber, deviceType } = formData;
+    if (!deviceNumber || !deviceType) {
+      console.error("❌ Missing required fields in formData");
+      return null;
+    }
+
+    // update item
+    const result = await prisma.items.update({
+      where: { id: selectedItemId },
+      data: {
+        deviceNumber,
+        deviceType,
+        status: "PENDING",
+        activety: "UPDATE",
+        
+      },
+    });
+
+    // revalidate route cache
+    revalidatePath("/user/inventory");
+
+    console.log("✅ Item updated successfully!");
+    return result;
+  } catch (error) {
+    console.error("⚠️ Error updating item:", error);
+    throw error;
+  }
+}
 export const transferItem = async (
   Id: number,
   selectedDepartmentId: number,
-  selectedLabId: number
+  selectedLabId: number,
+  transferQuantity: number
 ) => {
-  revalidatePath("user/inventory");
-  return await prisma.items.update({
-    where: {
-      id: Id,
-    },
-    data: {
-      department: {
-        connect: { departmentId: selectedDepartmentId },
-      },
-      lab: {
-        connect: { labId: selectedLabId },
-      },
-      status: "PENDING",
-      activety: "TRANSFER",
-    },
-  });
-};
+  const item = await prisma.items.findUnique({ where: { id: Id } });
+  if (!item) return { data: "Item not founded" };
 
+  revalidatePath("user/inventory");
+
+  if ((item.quantity ?? 0) > transferQuantity) {
+    await prisma.items.update({
+      where: {
+        id: Id,
+      },
+      data: {
+        quantity: (item.quantity ?? 0) - transferQuantity,
+      },
+    });
+
+    return await prisma.items.create({
+      data: {
+        deviceNumber: item.deviceNumber,
+        deviceType: item.deviceType,
+        quantity: transferQuantity,
+        departmentId: selectedDepartmentId,
+        labId: selectedLabId,
+        assignedUserId: item.assignedUserId,
+        custodianName: item.custodianName,
+        status: "PENDING",
+        activety: "TRANSFER",
+      },
+    });
+  } else {
+    return await prisma.items.update({
+      where: {
+        id: Id,
+      },
+      data: {
+        department: {
+          connect: { departmentId: selectedDepartmentId },
+        },
+        lab: {
+          connect: { labId: selectedLabId },
+        },
+        status: "PENDING",
+        activety: "TRANSFER",
+      },
+    });
+  }
+};
 export const handleItemRejection = async (id: number) => {
-  
   await prisma.items.update({
     where: {
       id: id,
@@ -191,9 +227,8 @@ export const handleItemRejection = async (id: number) => {
     },
   });
 };
-
 export const handleItemDeletion = async (id: number) => {
-  revalidatePath("user/inventory")
+  revalidatePath("user/inventory");
   await prisma.items.update({
     where: {
       id: id,
@@ -203,4 +238,14 @@ export const handleItemDeletion = async (id: number) => {
       status: "PENDING",
     },
   });
+};
+export const dataDetails = async (labId: number) => {
+  const result = await prisma.items.findMany({
+    where: { labId },
+    include: {
+      assignedBy: true,
+    }
+  });
+  revalidatePath("admin/inventory");
+  return result;
 };

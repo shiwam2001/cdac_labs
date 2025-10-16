@@ -11,7 +11,7 @@ const page = async () => {
   const departmentDetails = await getDepartmentDetail()
   return (
     <div className='bg-gray-100 bg-fixed h-screen sticky top-0 '>
-      <h1 className='text-3xl ml-3 sticky z-50 top-0 font-medium pb-2'>Laboratory</h1>
+      
       <div className=' flex  flex-col overflow-y-auto'>
 
       <Main  custodianUsers={custodianUsers} departmentDetails={departmentDetails}/>

@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { MdDeleteForever } from "react-icons/md";
-import { MinimalUser } from "./page";
+import { MinimalUser } from "./User";
 import { Trash2 } from "lucide-react";
 
 type Props = {
@@ -34,15 +34,15 @@ const AssignedLabs = ({ user }: Props) => {
   const [userLogs, setUserLogs] = useState(user);
   const [deleteLabId, setDeleteLabId] = useState<number | null>(null);
 
-  const handleDelete = (id: number) => {
-    setUserLogs((prev) => ({
-      ...prev,
-      assignedLabs: prev.assignedLabs.filter((lab) => lab.id !== id),
-    }));
-    setDeleteLabId(null);
-    console.log("Deleted Lab with id:", id);
-    // yaha backend API call kar sakte ho
-  };
+  // const handleDelete = (id: number) => {
+  //   setUserLogs((prev) => ({
+  //     ...prev,
+  //     assignedLabs: prev.assignedLabs.filter((lab) => lab.id !== id),
+  //   }));
+  //   setDeleteLabId(null);
+  //   console.log("Deleted Lab with id:", id);
+  //   // yaha backend API call kar sakte ho
+  // };
 
   return (
     <div className="mt-6">
@@ -55,41 +55,27 @@ const AssignedLabs = ({ user }: Props) => {
           <TableCaption>A list of laboratories assigned to the user.</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">ID</TableHead>
+              <TableHead className="">Sr No.</TableHead>
+              <TableHead className="">Lab ID</TableHead>
               <TableHead>Lab Number</TableHead>
               <TableHead>Lab Name</TableHead>
               <TableHead>Department</TableHead>
               <TableHead>Custodian</TableHead>
-              <TableHead className="text-center">Actions</TableHead>
+            
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {userLogs.assignedLabs.length > 0 ? (
-              userLogs.assignedLabs.map((item) => (
+              userLogs.assignedLabs.map((item,index) => (
                 <TableRow key={item.id}>
+                  <TableCell>{index+1}.</TableCell>
                   <TableCell>{item.id}</TableCell>
                   <TableCell>{item.lab.labId}</TableCell>
                   <TableCell>{item.lab.labName}</TableCell>
                   <TableCell>{item.lab.department.department_Name}</TableCell>
                   <TableCell>{item.lab.custodian?.name || "N/A"}</TableCell>
-                  <TableCell className="text-center">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          size="icon"
-                          variant="destructive"
-                          onClick={() => handleDelete(item.id)}
-                          className="rounded-full"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Delete Laboratory</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TableCell>
+                  
                 </TableRow>
               ))
             ) : (
@@ -104,7 +90,7 @@ const AssignedLabs = ({ user }: Props) => {
       </div>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deleteLabId} onOpenChange={() => setDeleteLabId(null)}>
+      {/* <Dialog open={!!deleteLabId} onOpenChange={() => setDeleteLabId(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-center">
@@ -127,7 +113,7 @@ const AssignedLabs = ({ user }: Props) => {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 };

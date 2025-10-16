@@ -36,13 +36,13 @@ const RejectedUsers: React.FC<Props> = ({ rejectedUsers }) => {
     .sort((a, b) => a.id - b.id); // Sort by unique ID
 
   return (
-    <div className="p-6 space-y-4 bg-white rounded-lg mt-2 h-screen shadow">
+    <div className="p-6  bg-white rounded-lg mt-2 h-screen shadow">
       <div className='flex justify-between'>
 
-      <h2 className="text-2xl font-semibold mb-4">Rejected Users</h2>
+      <h2 className="text-2xl font-semibold mb-2">Rejected Users</h2>
 
       {/* Search */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-2">
         <IoSearch className="text-gray-400" size={20} />
         <input
           type="text"
@@ -55,7 +55,7 @@ const RejectedUsers: React.FC<Props> = ({ rejectedUsers }) => {
           </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border rounded-lg">
+      <div className="overflow-x-auto ">
         <Table className="min-w-full">
           <TableHeader>
             <TableRow className='font-bold'>
@@ -88,7 +88,7 @@ const RejectedUsers: React.FC<Props> = ({ rejectedUsers }) => {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex items-center gap-1 text-green-600 border-green-600 hover:bg-green-50"
+                    className="flex items-center cursor-pointer gap-1 text-green-600 border-green-600 hover:bg-green-50"
                     onClick={() => handleApprove(user.email)}
                   >
                     <CheckCircle size={16} /> Approve

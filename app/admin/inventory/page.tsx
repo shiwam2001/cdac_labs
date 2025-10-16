@@ -1,9 +1,11 @@
 import React from 'react'
-
-const page = () => {
+import InventoryReports from './inventory-reports'
+import { getDepartment } from '@/app/actions/action1'
+const page = async () => {
+  const department = await getDepartment()
   return (
     <div>
-      hey this is inventory page
+      <InventoryReports department={department} />
     </div>
   )
 }

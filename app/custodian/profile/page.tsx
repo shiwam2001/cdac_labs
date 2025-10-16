@@ -1,18 +1,25 @@
 import { getCurrentCustodian, getCurrentUser } from '@/app/actions/action1'
 import React from 'react'
 import ProfileMain from "./profileMain"
+import BasicInformation from '@/app/user/profile/BasicInformation'
+import { redirect } from 'next/navigation'
+
 
 const page = async () => {
 
-    const custodian = await getCurrentUser()
+  const user = await getCurrentUser()
+  if (!user || user.role !== "CUSTODIAN") {
+    redirect("/login")
+  }
 
-    const currentCustodian=await getCurrentCustodian(custodian!.email)
+  const currentCustodian = await getCurrentCustodian(user!.email)
 
-    console.log((currentCustodian))
-    
   return (
     <div>
-      <ProfileMain currentCustodian={currentCustodian}/>
+      <div className='px-4'>
+        <BasicInformation user={user} />
+      </div>
+      <ProfileMain currentCustodian={currentCustodian} />
     </div>
   )
 }

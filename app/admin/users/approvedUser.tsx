@@ -96,9 +96,9 @@ const ApprovedUser: React.FC<Props> = ({ approvedUsers, departmentDetails }) => 
 
   return (
    
-  <div className="p-6 space-y-4 bg-white mt-2 rounded-lg h-screen flex flex-col">
+  <div className="p-6  bg-white mt-2 rounded-lg h-screen flex flex-col">
     {/* Sticky Nav */}
-    <nav className="flex justify-between sticky top-0 z-50 bg-white pb-2">
+    <nav className="flex justify-between  bg-white pb-2">
       <h2 className="text-2xl font-semibold">Approved Users</h2>
 
       {/* Search */}
@@ -109,7 +109,7 @@ const ApprovedUser: React.FC<Props> = ({ approvedUsers, departmentDetails }) => 
           placeholder="Search by name"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-64 border rounded-lg px-3 py-1"
+          className="w-64 border hover:bg-gray-200 rounded-lg px-3 py-1"
         />
       </div>
     </nav>
@@ -158,6 +158,7 @@ const ApprovedUser: React.FC<Props> = ({ approvedUsers, departmentDetails }) => 
                     <Button
                       size="icon"
                       variant="ghost"
+                      className='cursor-pointer'
                       onClick={() => {
                         setOpenRolePopup(
                           openRolePopup === user.email ? null : user.email
@@ -189,6 +190,7 @@ const ApprovedUser: React.FC<Props> = ({ approvedUsers, departmentDetails }) => 
                           size="sm"
                           variant="outline"
                           onClick={() => setOpenRolePopup(null)}
+                          className='cursor-pointer'
                         >
                           Cancel
                         </Button>
@@ -197,6 +199,7 @@ const ApprovedUser: React.FC<Props> = ({ approvedUsers, departmentDetails }) => 
                           onClick={() =>
                             handleRoleChange(user.email, selectedRole)
                           }
+                          className='cursor-pointer'
                         >
                           Save
                         </Button>
@@ -210,7 +213,7 @@ const ApprovedUser: React.FC<Props> = ({ approvedUsers, departmentDetails }) => 
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex items-center gap-1 text-red-600 border-red-600 hover:bg-red-50"
+                      className="flex items-center cursor-pointer gap-1 text-red-600 border-red-600 hover:bg-red-50"
                       onClick={() => handleReject(user.email)}
                     >
                       <XCircle size={16} /> Reject
@@ -223,6 +226,7 @@ const ApprovedUser: React.FC<Props> = ({ approvedUsers, departmentDetails }) => 
                         setCurrentUserEmail(user.email);
                         setDialogOpen(true);
                       }}
+                      className='cursor-pointer'
                     >
                       Assign Lab
                     </Button>
@@ -248,7 +252,7 @@ const ApprovedUser: React.FC<Props> = ({ approvedUsers, departmentDetails }) => 
             <Select
               onValueChange={(val) => setSelectedDepartment(Number(val))}
             >
-              <SelectTrigger>
+              <SelectTrigger className='w-full'>
                 <SelectValue placeholder="Choose Department" />
               </SelectTrigger>
               <SelectContent>
@@ -271,7 +275,7 @@ const ApprovedUser: React.FC<Props> = ({ approvedUsers, departmentDetails }) => 
               onValueChange={(val) => setSelectedUserLab(Number(val))}
               disabled={!selectedDepartment}
             >
-              <SelectTrigger>
+              <SelectTrigger className='w-full'>
                 <SelectValue placeholder="Choose Laboratory" />
               </SelectTrigger>
               <SelectContent>

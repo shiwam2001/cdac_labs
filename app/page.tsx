@@ -1,31 +1,25 @@
 import React from 'react'
-import { getCurrentUser} from './actions/action1'
 import Link from 'next/link'
 import { MdLogin } from "react-icons/md";
 import { FaRegIdCard } from "react-icons/fa";
-import { redirect } from 'next/navigation';
 
 const page = async () => {
-
-  const user = await getCurrentUser()
-    if (!user){
-      redirect("/login")
-    }
-    if (user.role == "ADMIN"){
-      redirect("/admin")
-    }else if(user.role == "USER" ){
-      redirect("/user")
-    }else if(user.role === "CUSTODIAN"){
-      redirect("/custodian")
-    }else{
-      redirect('/login')
-    }
-    
-    
+  // const user = await getCurrentUser()
+  // if (user) {
+  //   if (user?.role === "ADMIN") {
+  //     redirect("/admin")
+  //   } else if (user?.role === "USER") {
+  //     redirect("/user")
+  //   } else{
+  //     redirect("/custodian/profile")
+  //   }
+  // }
+  // else {
+  //   redirect("/login")
+  // }
   return (
     <div>
       <nav className='flex justify-between items-center bg-gray-800 text-white p-4'>
-
         <div className='flex items-center gap-3'>
           <img src="./cdacLogo.png" width={50} alt="" />
           <h1 className='text-3xl font-medium '>CDAC Laboratory Management System</h1>
@@ -39,11 +33,10 @@ const page = async () => {
               SignIn</Link></button>
           <button className=''>
             <Link
-            className='flex items-center px-3 py-2 rounded-xl border font-medium border-blue-600 text-blue-600 hover:bg-blue-50 transition gap-1'
+              className='flex items-center px-3 py-2 rounded-xl border font-medium border-blue-600 text-blue-600 hover:bg-blue-50 transition gap-1'
               href='/register'>
               <FaRegIdCard />
               SignUp</Link></button>
-
         </div>
       </nav>
     </div>

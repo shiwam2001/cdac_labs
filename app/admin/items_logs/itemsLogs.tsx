@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -8,133 +8,223 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/components/ui/tabs"
-import { Department, User } from "@prisma/client"
+} from "@/components/ui/tabs";
+import { Department, User } from "@prisma/client";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
-type ItemType = {
-  id: number
-  assignedUserId: number
-  custodianName: string
-  dateNow: Date
-  dateTill: Date | null
-  departmentId: number
-  deviceNumber: string
-  deviceType: string
-  labId: number
-  status: "PENDING" | "APPROVED" | "REJECTED"
+export type ItemType = {
+  id: number;
+  assignedUserId: number;
+  custodianName: string;
+  dateNow: Date;   // 👈 wapas Date
+  dateTill: Date | null;
+  departmentId: number;
+  deviceNumber: string | null;
+  quantity: number | null;
+  activety: string;
+  deviceType: string;
+  labId: number;
+  status: "PENDING" | "APPROVED" | "REJECTED";
   lab: {
-    labId: number
-    labNumber: number | null
-    labName: string | null
-
-    createdAt: Date
-    custodian: User | null
-    custodianId: string | null
-  }
+    labId: number;
+    labNumber: number | null;
+    labName: string | null;
+    createdAt: Date;
+    custodian: User | null;
+    custodianId: string | null;
+  };
   assignedBy: {
-    id: number
-    name: string
-    employeeId: string
-    email: string
-    role: string
-    createdAt: Date
-  }
-  department: Department
-}
+    id: number;
+    name: string;
+    employeeId: string;
+    email: string;
+    role: string;
+    createdAt: Date;
+  };
+  department: Department;
+};
+ 
 
 type LogsProps = {
-  items: ItemType[]
-}
+  items: ItemType[];
+};
 
 const Logs: React.FC<LogsProps> = ({ items }) => {
-  const [clientLoaded, setClientLoaded] = useState(false)
+  const [clientLoaded, setClientLoaded] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState<
+    "approved" | "pending" | "rejected"
+  >("approved");
 
-  // Ensure date formatting happens only after the client is loaded
   useEffect(() => {
-    setClientLoaded(true)
-  }, [])
+    setClientLoaded(true);
+  }, []);
 
-  const approvedItems = items.filter((item) => item.status === "APPROVED")
-  const rejectedItems = items.filter((item) => item.status === "REJECTED")
-  const pendingItems = items.filter((item) => item.status === "PENDING")
+  const filterItems = (list: ItemType[]) =>
+    list.filter(
+      (item) =>
+        item.deviceNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.deviceType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.lab.labName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.assignedBy.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-  const renderTable = (list: ItemType[], label: string) => (
-    <Table className="">
-      <TableHeader>
-        <TableRow>
-          <TableHead>Device ID</TableHead>
-          <TableHead>Device Number</TableHead>
-          <TableHead>Device Type</TableHead>
-          <TableHead>Department</TableHead>
-          <TableHead>Lab</TableHead>
-          <TableHead>Custodian</TableHead>
-          <TableHead>Assigned By</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Date Assigned</TableHead>
-          <TableHead>Date Till</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {list.length === 0 && (
+  const approvedItems = items.filter((item) => item.status === "APPROVED");
+  const rejectedItems = items.filter((item) => item.status === "REJECTED");
+  const pendingItems = items.filter((item) => item.status === "PENDING");
+
+  const handleDownload = async () => {
+    let list: ItemType[] = [];
+    if (activeTab === "approved") list = approvedItems;
+    else if (activeTab === "rejected") list = rejectedItems;
+    else if (activeTab === "pending") list = pendingItems;
+
+    const filtered = filterItems(list);
+
+    if (filtered.length === 0) {
+      alert(`No ${activeTab} logs to download`);
+      return;
+    }
+
+    const doc = new jsPDF();
+    autoTable(doc, {
+      head: [
+        [
+          "Sr. No.",
+          "Device ID",
+          "Device Number",
+          "Device Type",
+          "Department",
+          "Lab",
+          "Quantity",
+          "Assigned By",
+          "Custodian",
+          "Status",
+        ],
+      ],
+      body: filtered.map((item, index) => [
+        index + 1,
+        item.id,
+        item.deviceNumber,
+        item.deviceType,
+        item.department.department_Name,
+        item.lab.labName,
+        item.quantity,
+        item.assignedBy.name,
+        item.custodianName,
+        item.status,
+      ]),
+    });
+
+    doc.save(`${activeTab}-logs.pdf`);
+  };
+
+  const renderTable = (list: ItemType[], label: string) => {
+    const filtered = filterItems(list);
+    return (
+      <Table className="">
+        <TableHeader>
           <TableRow>
-            <TableCell colSpan={10} className="text-center text-gray-500">
-              No {label.toLowerCase()} logs found
-            </TableCell>
+            <TableHead>Device ID</TableHead>
+            <TableHead>Device Number</TableHead>
+            <TableHead>Device Type</TableHead>
+            <TableHead>Department</TableHead>
+            <TableHead>Lab</TableHead>
+            <TableHead>Custodian</TableHead>
+            <TableHead>Assigned By</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Activety</TableHead>
+            <TableHead>Date Assigned</TableHead>
+            <TableHead>Date Till</TableHead>
           </TableRow>
-        )}
-        {list.map((item) => (
-          <TableRow key={item.id}>
-            <TableCell>{item.id}</TableCell>
-            <TableCell>{item.deviceNumber}</TableCell>
-            <TableCell>{item.deviceType}</TableCell>
-            <TableCell>{item.department.department_Name}</TableCell>
-            <TableCell>
-              {item.lab.labName || "N/A"} ({item.lab.labNumber ?? "N/A"})
-            </TableCell>
-            <TableCell>{item.lab.custodian?.name || "N/A"}</TableCell>
-            <TableCell>
-              {item.assignedBy.name} ({item.assignedBy.role})
-            </TableCell>
-            <TableCell>{item.assignedBy.name}</TableCell>
-            <TableCell>
-              {clientLoaded ? item.dateNow.toLocaleDateString() : "Loading..."}
-            </TableCell>
-            <TableCell>
-              {clientLoaded
-                ? item.dateTill
-                  ? item.dateTill.toLocaleDateString()
-                  : "N/A"
-                : "Loading..."}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  )
+        </TableHeader>
+        <TableBody>
+          {filtered.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={10} className="text-center text-gray-500">
+                No {label.toLowerCase()} logs found
+              </TableCell>
+            </TableRow>
+          )}
+          {filtered.map((item) => (
+            <TableRow key={item.id}>
+              <TableCell>{item.id}</TableCell>
+              <TableCell>{item.deviceNumber ? item.deviceNumber:"N/A"}</TableCell>
+              <TableCell>{item.deviceType}</TableCell>
+              <TableCell>{item.department.department_Name}</TableCell>
+              <TableCell>
+                {item.lab.labName || "N/A"} ({item.lab.labNumber ?? "N/A"})
+              </TableCell>
+              <TableCell>{item.lab.custodian?.name || "N/A"}</TableCell>
+              <TableCell>
+                {item.assignedBy.name} ({item.assignedBy.role})
+              </TableCell>
+              <TableCell>{item.assignedBy.email}</TableCell>
+              <TableCell>{item.activety}</TableCell>
+              <TableCell>
+                {clientLoaded
+                  ? new Date(item.dateNow).toLocaleDateString()
+                  : "Loading..."}
+              </TableCell>
+              <TableCell>
+                {clientLoaded
+                  ? item.dateTill
+                    ? new Date(item.dateTill).toLocaleDateString()
+                    : "N/A"
+                  : "Loading..."}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
 
   return (
-    <Card className=" mt-2  h-screen  shadow-md">
+    <Card className="my-1 sticky top-1  h-screen shadow-md">
+      
       <CardContent>
-        <Tabs defaultValue="approved" className="w-full">
-          <div className="flex gap-2 ">
-            <CardTitle className="text-xl font-bold">Item Logs:</CardTitle>
-            <TabsList className="mb-4">
-              <TabsTrigger value="approved">Approved Logs</TabsTrigger>
-              <TabsTrigger value="rejected">Rejected Logs</TabsTrigger>
-              <TabsTrigger value="pending">Pending Logs</TabsTrigger>
-            </TabsList>
+        <Tabs
+          defaultValue="approved"
+          value={activeTab}
+          onValueChange={(val) => setActiveTab(val as any)}
+          className="w-full"
+        >
+          <div className="flex justify-between">
+            <div className=" flex  gap-3">
+             
+              <h1 className="text-2xl "><b>Item Logs</b>:</h1>
+            <div className="flex gap-2 items-center"> 
+              <TabsList className="mb-4 ">
+                <TabsTrigger className="cursor-pointer" value="approved">Approved Logs</TabsTrigger>
+                <TabsTrigger className="cursor-pointer" value="rejected">Rejected Logs</TabsTrigger>
+                <TabsTrigger className="cursor-pointer" value="pending">Pending Logs</TabsTrigger>
+              </TabsList>
+            </div>
+            </div>
+            <div className="flex gap-2 ">
+              <Input
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <Button onClick={handleDownload}>Download</Button>
+            </div>
           </div>
 
           <TabsContent value="approved">
@@ -149,7 +239,7 @@ const Logs: React.FC<LogsProps> = ({ items }) => {
         </Tabs>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default Logs
+export default Logs;

@@ -6,11 +6,11 @@ import { getCustodianItems, getItemLogs } from '@/app/actions/itemActions'
 const page = async () => {
     const itemDetails = await getItemLogs()
     return (
-        <div className='bg-gray-100 h-screen  sticky top-0 z-50 '>
+        <div className='bg-gray-100  px-2 z-50 '>
             
-            <div className='p-2 '>
+            
             <ItemsLogs items={itemDetails} />
-            </div>
+            
         </div>
     )
 }

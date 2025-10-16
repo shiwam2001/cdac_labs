@@ -22,7 +22,6 @@ export type AssignedLab = {
   labId: number;
   lab: labDetail;
 };
-
 export type User = {
   id: number;
   employeeId: string;
@@ -37,7 +36,6 @@ export type User = {
   department: Department;
   assignedLabs: AssignedLab[];
 };
-
 export interface MinimalLab {
   labId: number;
   labName: string | null;
@@ -55,43 +53,24 @@ export interface MinimalLab {
     createdAt: Date;
   };
 }
-
-
 type MinimalAssignedLab = {
   lab: MinimalLab
   id: number
   email: string
   labId: number
 }
-
 export type MinimalUser = Omit<User, "assignedLabs"> & {
   assignedLabs: MinimalAssignedLab[]
 }
-
-
-
 type props = {
     user:MinimalUser
 }
 
  function user({user}:props) {
   
-  
   return (
     <div className=''>
        <div >
-            <nav className='flex items-center justify-between '>
-              <h2 className=' text-2xl font-bold'>User profile</h2>
-              <div className='flex items-center gap-4'>
-                {user  && <p key={user.email} className='font-semibold'>Welcome, <u className='text-xl italic'>{user.name}</u>  </p> }                
-              </div>
-            </nav>
-
-            <div>
-              <BasicInformation user={user} />
-
-            </div>
-
             <div>
               <AssignedLabs user={user}/>
             </div>

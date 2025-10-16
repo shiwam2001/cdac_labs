@@ -140,14 +140,15 @@ const details = ({ users, custodianUsers, labDetail, departmentDetails }: props)
 
   return (
     <>
-      <div className='mx-4 p-2 bg-white rounded-lg h-screen flex flex-col my-3'>
-        <h1 className='text-xl font-medium  ml-1 pb-2'>Laboratory Details:</h1>
-        <div className='border-2 rounded-xl '>
+      <div className='mx-4 p-2 bg-white rounded-lg  flex flex-col my-3'>
+        <h1 className='text-xl font-medium  ml-1 pb-2'>Laboratory Details</h1>
+        <div className='border-1 rounded-xl '>
 
           <Table className="text-medium">
             <TableHeader className=" bg-white">
               <TableRow >
-                <TableHead className="w-[12%]">Lab id</TableHead>
+                <TableHead className="w-[8%]">SR No.</TableHead>
+                <TableHead className="w-[8%]">Lab id</TableHead>
                 <TableHead className="w-[16%]">Lab Number</TableHead>
                 <TableHead className="w-[16%]">Lab Name</TableHead>
                 <TableHead className="w-[16%]">Department</TableHead>
@@ -167,8 +168,9 @@ const details = ({ users, custodianUsers, labDetail, departmentDetails }: props)
               </TableBody>
             ) : (
               <TableBody>
-                {labDetail.map((item) => (
+                {labDetail.map((item,index) => (
                   <TableRow key={item.labId}>
+                    <TableCell>{index+1}.</TableCell>
                     <TableCell>{item.labId}</TableCell>
                     <TableCell>{item.labNumber}</TableCell>
                     <TableCell>{item.labName}</TableCell>
@@ -326,7 +328,7 @@ const details = ({ users, custodianUsers, labDetail, departmentDetails }: props)
                                 onValueChange={(value) => setAssignedUser(value)}
 
                               >
-                                <SelectTrigger>
+                                <SelectTrigger className='w-full'>
                                   <SelectValue placeholder="Here you can select your user" />
                                 </SelectTrigger>
                                 <SelectContent className='w-full'>

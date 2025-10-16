@@ -18,7 +18,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { DeviceType, deviceTypes } from '@/lib/DeviceTypes'
-import { User } from '../profile/page'
+import { User } from '../profile/User'
 import { Lab } from '@prisma/client'
 import { addItems } from '@/app/actions/itemActions'
 import { toast } from 'sonner'

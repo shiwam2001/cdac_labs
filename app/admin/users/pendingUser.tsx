@@ -46,26 +46,26 @@ const PendingUser: React.FC<Props> = ({ pendingUsers }) => {
     .sort((a, b) => a.id - b.id); // Sort by unique ID
 
   return (
-    <div className="p-6 mt-2 space-y-4 bg-white h-screen rounded-lg shadow">
+    <div className="p-6 mt-2  bg-white h-screen rounded-lg shadow">
       <div className='flex justify-between'>
 
-      <h2 className="text-2xl font-semibold mb-4">Pending Users</h2>
+        <h2 className="text-2xl font-semibold ">Pending Users</h2>
 
-      {/* Search */}
-      <div className="flex items-center gap-3 mb-4">
-        <IoSearch className="text-gray-400" size={20} />
-        <input
-          type="text"
-          placeholder="Search by name"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-64 border rounded-lg px-3 py-1"
+        {/* Search */}
+        <div className="flex items-center gap-3 mb-2">
+          <IoSearch className="text-gray-400" size={20} />
+          <input
+            type="text"
+            placeholder="Search by name"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-64 border rounded-lg px-3 py-1"
           />
+        </div>
       </div>
-          </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border rounded-lg">
+      <div className="overflow-x-auto">
         <Table className="min-w-full text-medium">
           <TableHeader>
             <TableRow className="font-bold">
@@ -99,7 +99,7 @@ const PendingUser: React.FC<Props> = ({ pendingUsers }) => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex items-center gap-1 text-green-600 border-green-600 hover:bg-green-50"
+                      className="flex items-center cursor-pointer gap-1 text-green-600 border-green-600 hover:bg-green-50"
                       onClick={() => handleApprove(user.email)}
                     >
                       <CheckCircle size={16} /> Approve
@@ -107,7 +107,7 @@ const PendingUser: React.FC<Props> = ({ pendingUsers }) => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex items-center gap-1 text-red-600 border-red-600 hover:bg-red-50"
+                      className="flex items-center cursor-pointer gap-1 text-red-600 border-red-600 hover:bg-red-50"
                       onClick={() => handleReject(user.email)}
                     >
                       <XCircle size={16} /> Reject

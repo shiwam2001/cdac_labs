@@ -97,6 +97,7 @@ model Items {
   deviceType  String
   dateNow   DateTime @default(now())
   dateTill   DateTime?
+  updatedAt   DateTime @default(now()) @updatedAt
 
   department Department @relation(fields: [departmentId],references: [departmentId])
   lab Lab @relation(fields:[labId],references: [labId])
@@ -107,14 +108,3 @@ model Items {
   @@map("items")
 }
 
-// model ItemRequest {
-//   id     Int   @id @default(autoincrement())
-//   itemId    Int
-//   newDepartmentId   Int
-//   newLabId     Int
-//   status   Action @default(PENDING)
-//   requestedAt    DateTime @default(now())
-//   activety   Activety @default(ADDED)
-
-//   item Items @relation(fields: [itemId], references: [id])
-// }

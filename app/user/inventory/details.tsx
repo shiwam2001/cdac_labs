@@ -45,6 +45,7 @@ type AddedItemsTableProps = {
 
 const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
   const [open, setOpen] = useState(false);
+  const [transferQuantity, setTransferQuantity] = useState(1)
   const [transferOpen, setTransferOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ItemWithRelations | null>(null);
   const [formData, setFormData] = useState({ deviceNumber: "", deviceType: "" });
@@ -91,8 +92,13 @@ const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
       return;
     }
 
+    if (transferQuantity <=0 || transferQuantity > (selectedItem.quantity??0)){
+      toast.error("Invalid transfer quantity")
+      return
+    }
+
     try {
-      await transferItem(selectedItem.id, selectedDept, selectedLab)
+      await transferItem(selectedItem.id, selectedDept, selectedLab,transferQuantity)
 
       toast.success("Item transferred successfully!");
       setTransferOpen(false);
@@ -102,13 +108,13 @@ const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
     }
   };
 
-  const handleDeleteItem= async (id:number)=>{
+  const handleDeleteItem = async (id: number) => {
     const result = confirm("Are you sure to deleted the perticuler item.")
-    if(result){
+    if (result) {
       await handleItemDeletion(id)
-    toast.error("Item Deleted Request has gone at custodian panel.")
+      toast.error("Item Deleted Request has gone at custodian panel.")
     }
-    
+
   }
   return (
     <div>
@@ -144,7 +150,7 @@ const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
               addedItems.map((item) => (
                 <TableRow key={item.id} className="hover:bg-gray-50">
                   <TableCell>{item.id}</TableCell>
-                  <TableCell>{item.deviceNumber}</TableCell>
+                  <TableCell>{item.deviceNumber ? item.deviceNumber : "N/A"}</TableCell>
                   <TableCell>{item.deviceType}</TableCell>
                   <TableCell>{item.lab.labName ?? "N/A"}</TableCell>
                   <TableCell>{item.department.department_Name}</TableCell>
@@ -182,7 +188,7 @@ const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
 
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button onClick={()=>handleDeleteItem(item.id)}>
+                          <Button onClick={() => handleDeleteItem(item.id)}>
                             <MdDelete size={18} />
                           </Button>
                         </TooltipTrigger>
@@ -196,10 +202,10 @@ const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
                   <TableCell>
                     <span
                       className={`px-2 py-1 rounded-full text-white font-medium text-sm ${item.status === "PENDING"
-                          ? "bg-yellow-500"
-                          : item.status === "APPROVED"
-                            ? "bg-green-500"
-                            : "bg-red-500"
+                        ? "bg-yellow-500"
+                        : item.status === "APPROVED"
+                          ? "bg-green-500"
+                          : "bg-red-500"
                         }`}
                     >
                       {item.status}
@@ -247,7 +253,7 @@ const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
 
             <DialogFooter>
               <Button type="submit" className="w-full">
-                Save
+                Update
               </Button>
             </DialogFooter>
           </form>
@@ -302,9 +308,26 @@ const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
                     ))}
                 </SelectContent>
               </Select>
-
-             
             </div>
+
+            {selectedItem && (selectedItem.quantity ?? 0) > 1 ? (
+              <div className="font-medium text-medium">
+
+                <label htmlFor="" className=" block mb-1">
+                  Enter Quantity to transfer (Available: {selectedItem.quantity})
+                </label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={selectedItem.quantity ?? 0}
+                  value={transferQuantity}
+                  onChange={(e) => setTransferQuantity(Number(e.target.value))}
+                />
+
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600 ml-1 font-medium">Quantity is 1 (Default transfer)</p>
+            )}
           </div>
 
           <DialogFooter>
