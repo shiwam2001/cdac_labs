@@ -45,12 +45,12 @@ const navigation: Record<string, NavItem[]> = {
   CUSTODIAN: [
     { name: "Notification", href: "/custodian/notification", icon: <MdOutlineNotificationsActive size={20} /> },
     { name: "Profile", href: "/custodian/profile", icon: <MdSpaceDashboard size={20} /> },
-    { name: "Inventory", href: "/custodian/inventory", icon: <FaCalculator size={20} /> },
+    
     { name: "Item logs", href: "/custodian/items_logs", icon: <TbLogs size={18} /> },
   ],
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ role }) => {
+const Sidebar: React.FC<SidebarProps>  = ({ role }) => {
   const pathname = usePathname()
   const router = useRouter()
   const [loader, setLoader] = useState(false)

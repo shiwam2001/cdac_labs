@@ -2,6 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import { MdLogin } from "react-icons/md";
 import { FaRegIdCard } from "react-icons/fa";
+import LandingPage from './landingPage';
 
 const page = async () => {
   // const user = await getCurrentUser()
@@ -19,7 +20,7 @@ const page = async () => {
   // }
   return (
     <div>
-      <nav className='flex justify-between items-center bg-gray-800 text-white p-4'>
+      {/* <nav className='flex justify-between items-center bg-gray-800 text-white p-4'>
         <div className='flex items-center gap-3'>
           <img src="./cdacLogo.png" width={50} alt="" />
           <h1 className='text-3xl font-medium '>CDAC Laboratory Management System</h1>
@@ -38,7 +39,8 @@ const page = async () => {
               <FaRegIdCard />
               SignUp</Link></button>
         </div>
-      </nav>
+      </nav> */}
+      <LandingPage/>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { Role } from "@prisma/client";
 import createUser, { Action } from "../actions/action1";
 import { Department } from "../admin/laboratory/main";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import {
   Select,
   SelectContent,
@@ -19,23 +20,22 @@ type Props = {
   departmentDetails: Department[];
 };
 
-const page = ({ departmentDetails }: Props) => {
-  // ✅ Define Zod schema
-  // ✅ Define Zod schema with regex
+const RegisterPage = ({ departmentDetails }: Props) => {
+  // ✅ Schema
   const registerSchema = z
     .object({
       name: z
         .string()
         .min(3, "Name must be at least 3 characters")
-        .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces"), // regex for letters + space
+        .regex(/^[a-zA-Z\s]+$/, "Name can only contain letters and spaces"),
       email: z
         .string()
         .email("Invalid email address")
-        .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Enter a valid email"), // redundant but explicit
+        .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Enter a valid email"),
       employeeId: z
         .string()
         .min(1, "Employee ID is required")
-        .regex(/^[A-Za-z0-9]+$/, "Employee ID must be alphanumeric"), // alphanumeric
+        .regex(/^[A-Za-z0-9]+$/, "Employee ID must be alphanumeric"),
       departmentId: z.number().min(1, "Department is required"),
       password: z
         .string()
@@ -50,7 +50,6 @@ const page = ({ departmentDetails }: Props) => {
       message: "Passwords do not match",
       path: ["confirmPassword"],
     });
-
 
   const [showPassword, setShowPassword] = useState(false);
   const [deptDetail] = useState(departmentDetails);
@@ -67,20 +66,19 @@ const page = ({ departmentDetails }: Props) => {
     confirmPassword: "",
   });
 
-  // ✅ Handle input changes
+  // ✅ Input handler
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
-  // ✅ Handle form submit
+  // ✅ Submit handler
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsValid(true);
     setErrors({});
 
     const result = registerSchema.safeParse(formData);
-
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
       result.error.issues.forEach((issue) => {
@@ -93,7 +91,6 @@ const page = ({ departmentDetails }: Props) => {
     }
 
     const { name, email, employeeId, departmentId, password } = result.data;
-
     const newUser = {
       name,
       email,
@@ -128,71 +125,59 @@ const page = ({ departmentDetails }: Props) => {
   };
 
   return (
-    <div className="flex register">
-      <div className="flex flex-col justify-center m-auto gap-8 rounded-lg px-8 p-8">
-        <h1 className="text-4xl text-center">Register at CDAC IMS</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="flex flex-col md:flex-row bg-white/70 backdrop-blur-md rounded-3xl shadow-lg overflow-hidden w-[90%] max-w-5xl"
+      >
+        {/* Left side (Form) */}
+        <div className="flex-1 p-10">
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-3xl font-bold text-center mb-6 text-gray-800"
+          >
+            Register at CDAC IMS
+          </motion.h1>
 
-        <form onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-3 w-full">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Name */}
-            {/* Name */}
-            <div className="flex flex-col gap-1">
-              <label htmlFor="name" className="font-medium text-lg">
-                Employee name: <span className="text-red-500">*</span>
-              </label>
-              <Input
-                type="text"
-                id="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Full Name"
-                required
-              />
-              {errors.name && (
-                <p className="text-red-500 font-medium text-sm">{errors.name}</p>
-              )}
-            </div>
+            <FormField
+              id="name"
+              label="Employee Name"
+              value={formData.name}
+              onChange={handleChange}
+              error={errors.name}
+              placeholder="Full Name"
+            />
 
             {/* Employee ID */}
-            <div className="flex flex-col gap-1">
-              <label htmlFor="employeeId" className="font-medium text-lg">
-                Employee ID: <span className="text-red-500">*</span>
-              </label>
-              <Input
-                type="text"
-                id="employeeId"
-                value={formData.employeeId}
-                onChange={handleChange}
-                placeholder="Employee Id"
-                required
-              />
-              {errors.employeeId && (
-                <p className="text-red-500 font-medium text-sm">{errors.employeeId}</p>
-              )}
-            </div>
+            <FormField
+              id="employeeId"
+              label="Employee ID"
+              value={formData.employeeId}
+              onChange={handleChange}
+              error={errors.employeeId}
+              placeholder="Employee ID"
+            />
 
             {/* Email */}
-            <div className="flex flex-col gap-1">
-              <label htmlFor="email" className="font-medium text-lg">
-                Email address: <span className="text-red-500">*</span>
-              </label>
-              <Input
-                type="text"
-                id="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email"
-                required
-              />
-              {errors.email && (
-                <p className="text-red-500 font-medium text-sm">{errors.email}</p>
-              )}
-            </div>
+            <FormField
+              id="email"
+              label="Email Address"
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+              placeholder="example@cdac.in"
+            />
 
             {/* Department */}
             <div className="flex flex-col gap-1">
-              <label htmlFor="departmentId" className="font-medium text-lg">
-                Department: <span className="text-red-500">*</span>
+              <label htmlFor="departmentId" className="font-medium text-gray-700">
+                Department <span className="text-red-500">*</span>
               </label>
               <Select
                 value={formData.departmentId?.toString()}
@@ -208,12 +193,8 @@ const page = ({ departmentDetails }: Props) => {
                 </SelectTrigger>
                 <SelectContent>
                   {deptDetail.length === 0 ? (
-                    <SelectItem
-                      value="none"
-                      disabled
-                      className="text-center text-medium text-gray-700"
-                    >
-                      There are no departments.
+                    <SelectItem value="none" disabled>
+                      No departments available
                     </SelectItem>
                   ) : (
                     deptDetail.map((item) => (
@@ -228,103 +209,137 @@ const page = ({ departmentDetails }: Props) => {
                 </SelectContent>
               </Select>
               {errors.departmentId && (
-                <p className="text-red-500 font-medium text-sm">{errors.departmentId}</p>
+                <p className="text-red-500 text-sm">{errors.departmentId}</p>
               )}
             </div>
 
             {/* Password */}
-            <div className="flex flex-col gap-1">
-              <label htmlFor="password" className="font-medium text-lg">
-                Password: <span className="text-red-500">*</span>
-              </label>
-              <div className="relative flex items-center">
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Password"
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute right-2 top-2 text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                >
-                  {showPassword ? "Hide" : "View"}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-red-500 font-medium text-sm">{errors.password}</p>
-              )}
-            </div>
+            <PasswordField
+              id="password"
+              label="Password"
+              value={formData.password}
+              onChange={handleChange}
+              showPassword={showPassword}
+              togglePassword={() => setShowPassword((prev) => !prev)}
+              error={errors.password}
+            />
 
             {/* Confirm Password */}
-            <div className="flex flex-col gap-1">
-              <label htmlFor="confirmPassword" className="font-medium text-lg">
-                Confirm password: <span className="text-red-500">*</span>
-              </label>
-              <div className="relative flex items-center">
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  id="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Confirm Password"
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute right-2 top-2 text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                >
-                  {showPassword ? "Hide" : "View"}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm font-medium">
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </div>
+            <PasswordField
+              id="confirmPassword"
+              label="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              showPassword={showPassword}
+              togglePassword={() => setShowPassword((prev) => !prev)}
+              error={errors.confirmPassword}
+            />
 
+            {/* Submit */}
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              type="submit"
+              className="bg-blue-600 text-white font-semibold py-2 rounded-lg mt-4 hover:bg-blue-700 transition"
+            >
+              {isValid ? "Submitting..." : "Register"}
+            </motion.button>
+
+            {isSubmit && (
+              <p className="text-green-600 text-center font-medium mt-2">
+                User registered successfully!
+              </p>
+            )}
+          </form>
+
+          <div className="text-sm text-center mt-6 text-gray-600">
+            Already have an account?{" "}
+            <a href="/login" className="text-blue-600 font-semibold underline">
+              Sign in
+            </a>
           </div>
-
-          <button
-            type="submit"
-            className="bg-blue-400 mt-8 text-gray-700 w-full hover:text-gray-600 font-bold hover:bg-blue-300 cursor-pointer rounded py-2 px-4"
-          >
-            {isValid ? "Submitting..." : "Register"}
-          </button>
-
-          {isSubmit && (
-            <div className="text-green-500 text-xl font-medium text-center">
-              User registered successfully!
-            </div>
-          )}
-        </form>
-
-        <div className="flex text-center text-sm m-auto justify-center gap-1">
-          <h5 className="text-gray-400">Already have an account?</h5>
-          <a
-            href="/login"
-            className="text-blue-500 font-bold underline hover:text-blue-400"
-          >
-            Sign in
-          </a>
         </div>
-      </div>
 
-      <div className="flex items-center content-center">
-        <img
-          className="flex items-center imagin rounded-l-4xl"
-          src="/original-ba68e98ea10e1867e831884c3b153387.webp"
-          alt=""
-        />
-      </div>
+        {/* Right side (Image) */}
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="hidden md:flex flex-1 bg-gradient-to-tr from-blue-200 via-blue-100 to-blue-50 items-center justify-center"
+        >
+          <img
+            src="/original-ba68e98ea10e1867e831884c3b153387.webp"
+            alt="CDAC Inventory"
+            className="w-[90%] rounded-2xl shadow-lg"
+          />
+        </motion.div>
+      </motion.div>
     </div>
   );
 };
 
-export default page;
+// ✅ Subcomponents for clean code
 
+function FormField({
+  id,
+  label,
+  value,
+  onChange,
+  error,
+  placeholder,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: any;
+  error?: string;
+  placeholder?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="font-medium text-gray-700">
+        {label}: <span className="text-red-500">*</span>
+      </label>
+      <Input id={id} value={value} onChange={onChange} placeholder={placeholder} required />
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+    </div>
+  );
+}
+
+function PasswordField({
+  id,
+  label,
+  value,
+  onChange,
+  showPassword,
+  togglePassword,
+  error,
+}: any) {
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="font-medium text-gray-700">
+        {label}: <span className="text-red-500">*</span>
+      </label>
+      <div className="relative">
+        <Input
+          id={id}
+          type={showPassword ? "text" : "password"}
+          value={value}
+          onChange={onChange}
+          placeholder={label}
+          required
+        />
+        <button
+          type="button"
+          onClick={togglePassword}
+          className="absolute right-3 top-2 text-gray-500 text-sm hover:text-gray-700"
+        >
+          {showPassword ? "Hide" : "View"}
+        </button>
+      </div>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+    </div>
+  );
+}
+
+export default RegisterPage;
