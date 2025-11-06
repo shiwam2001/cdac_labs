@@ -145,7 +145,7 @@ const main = ({ custodianUsers, departmentDetails }: props) => {
           </div>
 
           {/* Custodian Name */}
-          
+
           <div className="flex flex-col w-full space-y-1 ">
             <label htmlFor="custodianId" className="text-[15px] font-medium">
               Custodian Name
@@ -249,12 +249,22 @@ const main = ({ custodianUsers, departmentDetails }: props) => {
               </Dialog>
             </div>
           </div>
-                  
-          <div className="col-span-2 flex justify-end mt-3">
-            <Button type="submit" className="px-6 w-full h-9">
-              {loader ? "Creating Laboratory..." : "Create"}
+          
+
+
+          <p className="items-center ml-3 mt-3"><b className="text-red-500 text-sm">*</b>From here, you can easily create a new laboratory and manage its details seamlessly.</p>
+
+          <div className=" flex justify-end mt-3">
+            <Button
+              type="submit"
+              className="cursor-pointer w-[25%]  rounded-md text-xl bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+              
+              >
+              {loader ? "Creating..." : "Create"}
             </Button>
+
           </div>
+              
         </form>
       </div>
     </div>

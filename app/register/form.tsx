@@ -56,7 +56,6 @@ const RegisterPage = ({ departmentDetails }: Props) => {
   const [isValid, setIsValid] = useState(false);
   const [isSubmit, setIsSubmit] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -104,6 +103,17 @@ const RegisterPage = ({ departmentDetails }: Props) => {
     const res = await createUser(newUser);
 
     if (res) {
+      if (!res?.success) {
+        if (res.message?.includes("Email")) {
+          setErrors((prev) => ({ ...prev, email: res.message || "Email already in use" }));
+        } else if (res.message?.includes("Employee ID")) {
+          setErrors((prev) => ({ ...prev, employeeId: res.message || "Employee ID already in use" }));
+        } else {
+          setErrors((prev) => ({ ...prev, general: res.message || "Something went wrong" }));
+        }
+        setIsValid(false);
+        return;
+      }
       setTimeout(() => {
         setIsValid(false);
         setIsSubmit(true);
@@ -163,6 +173,11 @@ const RegisterPage = ({ departmentDetails }: Props) => {
               error={errors.employeeId}
               placeholder="Employee ID"
             />
+            {/* {errors && (
+            <p className={`text-sm text-center text-red-500 font-semibold ${errors.employeeId ? "block" : "hidden"} `}>
+              {errors.employeeId}
+            </p>
+          )} */}
 
             {/* Email */}
             <FormField
@@ -173,6 +188,11 @@ const RegisterPage = ({ departmentDetails }: Props) => {
               error={errors.email}
               placeholder="example@cdac.in"
             />
+            {/* {errors && (
+            <p className={`text-sm text-center text-red-500 font-semibold ${errors.email ? "block" : "hidden"} `}>
+              {errors.email}
+            </p>
+          )} */}
 
             {/* Department */}
             <div className="flex flex-col gap-1">

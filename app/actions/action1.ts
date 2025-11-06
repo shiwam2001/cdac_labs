@@ -48,8 +48,30 @@ export default async function createUser(data: User) {
   }
 
   try {
+    // 🔍 Check if email already exists
+    const existingEmail = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingEmail) {
+      writeLog(`FAILED USER CREATION: Email already exists (${email})`);
+      return { success: false, message: "Email already exists" };
+    }
+
+    // 🔍 Check if employeeId already exists
+    const existingEmployee = await prisma.user.findUnique({
+      where: { employeeId },
+    });
+
+    if (existingEmployee) {
+      writeLog(`FAILED USER CREATION: Employee ID already exists (${employeeId})`);
+      return { success: false, message: "Employee ID already exists" };
+    }
+
+    // 🔐 Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // 🧾 Create user
     const user = await prisma.user.create({
       data: {
         name,
@@ -63,12 +85,13 @@ export default async function createUser(data: User) {
     });
 
     writeLog(`USER CREATED: ${email} (role=${role})`);
-    return user;
+    return { success: true, message: "User created successfully", user };
   } catch (err: any) {
     writeLog(`ERROR IN USER CREATION: ${email} | ${err.message}`);
-    throw err;
+    return { success: false, message: err.message || "User creation failed" };
   }
 }
+
 
 export async function login(data: UserResponse) {
   const { email, password } = data;
@@ -85,7 +108,7 @@ export async function login(data: UserResponse) {
 
   if (!user) {
     writeLog(`FAILED LOGIN: User not found - ${email}`);
-    return { success: false, message: "Something went wrong please " };
+    return { success: false, message: "Something went wrong please enter a valid email and password." };
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);

@@ -43,7 +43,7 @@ export type labDetail = {
   labId: number
   labNumber: number | null
   labName: string | null
-  custodian:{ createdAt: Date; departmentId: number; name: string; email: string; id: number; role: Role; employeeId: string; password: string; action: Action; } | null
+  custodian: { createdAt: Date; departmentId: number; name: string; email: string; id: number; role: Role; employeeId: string; password: string; action: Action; } | null
   createdAt: Date
   departmentId: number
   department: {
@@ -162,15 +162,15 @@ const details = ({ users, custodianUsers, labDetail, departmentDetails }: props)
               <TableBody>
                 <TableRow>
                   <TableCell colSpan={7} className="text-center text-2xl py-4 text-gray-500">
-                    Here no any lab created...
+                    No laboratories have been created yet.
                   </TableCell>
                 </TableRow>
               </TableBody>
             ) : (
               <TableBody>
-                {labDetail.map((item,index) => (
+                {labDetail.map((item, index) => (
                   <TableRow key={item.labId}>
-                    <TableCell>{index+1}.</TableCell>
+                    <TableCell>{index + 1}.</TableCell>
                     <TableCell>{item.labId}</TableCell>
                     <TableCell>{item.labNumber}</TableCell>
                     <TableCell>{item.labName}</TableCell>
@@ -194,56 +194,56 @@ const details = ({ users, custodianUsers, labDetail, departmentDetails }: props)
 
                         <Tooltip>
                           <TooltipTrigger asChild>
-                           <Dialog onOpenChange={setOpen} >
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <DialogTrigger asChild>
-                                  <Button
-                                    onClick={() => {
-                                      setSelectedLab(item)
-                                      setOpen(true)
-                                    }}
-                                    className="cursor-pointer"
+                            <Dialog onOpenChange={setOpen} >
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <DialogTrigger asChild>
+                                    <Button
+                                      onClick={() => {
+                                        setSelectedLab(item)
+                                        setOpen(true)
+                                      }}
+                                      className="cursor-pointer"
+                                    >
+                                      <FaRegEdit size={20} />
+                                    </Button>
+                                  </DialogTrigger>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Update custodian name</p>
+                                </TooltipContent>
+                              </Tooltip>
+
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle className='text-center'>Edit your <b><u>custodian</u></b> </DialogTitle>
+                                  <DialogDescription>
+                                    This action cannot be undone. This will permanently delete your account
+                                    and remove your data from our servers.
+                                  </DialogDescription>
+
+                                  <Select
+                                    value={custodianName}
+                                    onValueChange={(value) => setCustodianName(value)} // 👈 update state
                                   >
-                                    <FaRegEdit size={20} />
-                                  </Button>
-                                </DialogTrigger>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Update custodian name</p>
-                              </TooltipContent>
-                            </Tooltip>
-
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle className='text-center'>Edit your <b><u>custodian</u></b> </DialogTitle>
-                                <DialogDescription>
-                                  This action cannot be undone. This will permanently delete your account
-                                  and remove your data from our servers.
-                                </DialogDescription>
-
-                                <Select
-                                  value={custodianName}
-                                  onValueChange={(value) => setCustodianName(value)} // 👈 update state
-                                >
-                                  <SelectTrigger className="w-full p-2 border border-gray-300 rounded mb-4">
-                                    <SelectValue placeholder="Edit Custodian" />
-                                  </SelectTrigger>
-                                  <SelectContent className='rounded-xl'>
-                                    <SelectItem value=".." disabled>
-                                    </SelectItem>
-                                    {custodianUsers.map((custodian) => (
-                                      <SelectItem key={custodian.id} value={custodian.name}>
-                                        {custodian.name } -@{custodian.email}
+                                    <SelectTrigger className="w-full p-2 border border-gray-300 rounded mb-4">
+                                      <SelectValue placeholder="Edit Custodian" />
+                                    </SelectTrigger>
+                                    <SelectContent className='rounded-xl'>
+                                      <SelectItem value=".." disabled>
                                       </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                  <Button onClick={updateName}>Save</Button>
-                                </Select>
+                                      {custodianUsers.map((custodian) => (
+                                        <SelectItem key={custodian.id} value={custodian.name}>
+                                          {custodian.name} -@{custodian.email}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                    <Button onClick={updateName}>Save</Button>
+                                  </Select>
 
-                              </DialogHeader>
-                            </DialogContent>
-                          </Dialog>
+                                </DialogHeader>
+                              </DialogContent>
+                            </Dialog>
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>Add to library</p>
@@ -302,7 +302,7 @@ const details = ({ users, custodianUsers, labDetail, departmentDetails }: props)
                               </DialogHeader>
                             </DialogContent>
                           </Dialog> */}
-  
+
                           <Dialog>
                             <Tooltip>
                               <TooltipTrigger asChild >
@@ -321,8 +321,7 @@ const details = ({ users, custodianUsers, labDetail, departmentDetails }: props)
                             <DialogContent>
                               <DialogTitle className='text-center'>Here you can <b>Assigned a Laboratory</b> to User.</DialogTitle>
                               <DialogDescription>
-                                Here you can assign a laboratory to user that he can access the perticuler laboratory which is assigned by Admin.
-                              </DialogDescription>
+                                Assign a laboratory to a user so they can access only the labs granted by the Admin.                              </DialogDescription>
                               <Select
                                 value={assignedUser}
                                 onValueChange={(value) => setAssignedUser(value)}
@@ -333,7 +332,7 @@ const details = ({ users, custodianUsers, labDetail, departmentDetails }: props)
                                 </SelectTrigger>
                                 <SelectContent className='w-full'>
                                   {users.length === 0 ? (
-                                    <SelectItem value=''>here no any Users</SelectItem>
+                                    <SelectItem value=''>No users found. Please add one to get started.</SelectItem>
                                   ) : (
                                     users.map((item, index) =>
                                       <SelectItem className='w-[100%]' key={index} value={item.email} >{item.name} -@{item.email}</SelectItem>
@@ -358,7 +357,7 @@ const details = ({ users, custodianUsers, labDetail, departmentDetails }: props)
                       </Tooltip> */}
 
                         <TooltipProvider>
-                          <Dialog  onOpenChange={setOpenDelete}>
+                          <Dialog onOpenChange={setOpenDelete}>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <DialogTrigger asChild>

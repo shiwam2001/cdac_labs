@@ -36,7 +36,8 @@ const ApprovedUser: React.FC<Props> = ({ approvedUsers, departmentDetails }) => 
   const [labs, setLabs] = useState<Lab[]>([]);
   const [selectedUserLab, setSelectedUserLab] = useState<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [currentUserEmail, setCurrentUserEmail] = useState<string>(''); 
+  const [currentUserEmail, setCurrentUserEmail] = useState<string>('');
+  const [popupPosition, setPopupPosition] = useState<{ top: number; left: number } | null>(null);
 
   const handleReject = async (email: string) => {
     if (confirm('Do you want to reject this user?')) {
@@ -82,225 +83,228 @@ const ApprovedUser: React.FC<Props> = ({ approvedUsers, departmentDetails }) => 
     }
   };
 
-//   const users = empData.filter(
-//     (u) => u.action === 'APPROVED' && u.name.toLowerCase().includes(searchTerm.toLowerCase())
-//   ).sort((a, b) => a.id - b.id);
-
   const users = empData
-  .filter(
-    (u) =>
-      u.action === 'APPROVED' &&
-      u.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-  .sort((a, b) => a.id- b.id);
+    .filter(
+      (u) =>
+        u.action === 'APPROVED' &&
+        u.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => a.id - b.id);
 
   return (
-   
-  <div className="p-6  bg-white mt-2 rounded-lg h-screen flex flex-col">
-    {/* Sticky Nav */}
-    <nav className="flex justify-between  bg-white pb-2">
-      <h2 className="text-2xl font-semibold">Approved Users</h2>
 
-      {/* Search */}
-      <div className="flex items-center gap-3">
-        <IoSearch className="text-gray-400" size={20} />
-        <input
-          type="text"
-          placeholder="Search by name"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-64 border hover:bg-gray-200 rounded-lg px-3 py-1"
-        />
-      </div>
-    </nav>
+    <div className="p-6  bg-white mt-2 rounded-lg h-screen flex flex-col">
+      {/* Sticky Nav */}
+      <nav className="flex justify-between  bg-white pb-2">
+        <h2 className="text-2xl font-semibold">Approved Users</h2>
 
-    {/* Scrollable Table Area */}
-    <div className="flex-1 overflow-y-auto">
-      <div className="overflow-x-auto">
-        <Table className="min-w-full">
-          {/* Sticky Table Header */}
-          <TableHeader className="sticky top-0 z-40 ">
-            <TableRow className="font-bold">
-              <TableCell>User Id</TableCell>
-              <TableCell>Employee Id</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Department</TableCell>
-              <TableCell className="w-[15%]">Role</TableCell>
-              <TableCell className="text-center">Action</TableCell>
-            </TableRow>
-          </TableHeader>
+        {/* Search */}
+        <div className="flex items-center gap-3">
+          <IoSearch className="text-gray-400" size={20} />
+          <input
+            type="text"
+            placeholder="Search by name"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-64 border hover:bg-gray-200 rounded-lg px-3 py-1"
+          />
+        </div>
+      </nav>
 
-          <TableBody>
-            {users.length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-center py-6 text-gray-500"
-                >
-                  No approved users found
-                </TableCell>
+      {/* Scrollable Table Area */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="overflow-x-auto">
+          <Table className="min-w-full">
+            {/* Sticky Table Header */}
+            <TableHeader className="sticky top-0 z-40 ">
+              <TableRow className="font-bold">
+                <TableCell>User Id</TableCell>
+                <TableCell>Employee Id</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Department</TableCell>
+                <TableCell className="w-[15%]">Role</TableCell>
+                <TableCell className="text-center">Action</TableCell>
               </TableRow>
-            )}
+            </TableHeader>
 
-            {users.map((user) => (
-              <TableRow key={user.email} className="hover:bg-gray-50">
-                <TableCell>{user.id}</TableCell>
-                <TableCell>{user.employeeId}</TableCell>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.department.department_Name}</TableCell>
+            <TableBody>
+              {users.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="text-center py-6 text-gray-500"
+                  >
+                    No approved users found
+                  </TableCell>
+                </TableRow>
+              )}
 
-                <TableCell className="relative">
-                  <div className="flex items-center justify-between pr-8">
-                    {user.role}
-                    {/* Role Edit Button */}
-                   <Button
-  size="icon"
-  variant="ghost"
-  className="cursor-pointer rounded-full bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
-  onClick={() => {
-    setOpenRolePopup(openRolePopup === user.email ? null : user.email);
-    setSelectedRole(user.role);
-  }}
->
-  <FaRegEdit className="text-blue-600 text-lg" />
-</Button>
+              {users.map((user) => (
+                <TableRow key={user.email} className="hover:bg-gray-50">
+                  <TableCell>{user.id}</TableCell>
+                  <TableCell>{user.employeeId}</TableCell>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.department.department_Name}</TableCell>
+
+                  <TableCell className="relative">
+                    <div className="flex items-center justify-between pr-8">
+                      {user.role}
+                      {/* Role Edit Button */}
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="cursor-pointer rounded-full bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                        onClick={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setPopupPosition({ top: rect.bottom + 8, left: rect.left });
+                          setOpenRolePopup(openRolePopup === user.email ? null : user.email);
+                          setSelectedRole(user.role);
+                        }}
+                      >
+                        <FaRegEdit className="text-blue-600 text-lg" />
+                      </Button>
 
 
-                  </div>
+                    </div>
 
-                  {/* Role Popup */}
-                  {openRolePopup === user.email && (
-                    <div className="absolute z-50 bg-white border rounded-lg shadow-md p-3 top-8 left-0 w-40">
-                      <Select
+                    {/* Role Popup */}
+                    {openRolePopup === user.email && (
+                      <div
+                        className="fixed z-50 bg-white border rounded-lg shadow-md p-3 w-40"
+                        style={{
+                          top: `${popupPosition?.top || 0}px`,
+                          left: `${popupPosition?.left || 0}px`,
+                        }}
+                      >                        <Select
                         onValueChange={(val) => setSelectedRole(val)}
                         defaultValue={selectedRole}
                       >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select Role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="USER">User</SelectItem>
-                          <SelectItem value="CUSTODIAN">Custodian</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <div className="flex justify-end gap-2 mt-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setOpenRolePopup(null)}
-                          className='cursor-pointer'
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            handleRoleChange(user.email, selectedRole)
-                          }
-                          className='cursor-pointer'
-                        >
-                          Save
-                        </Button>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select Role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="USER">User</SelectItem>
+                            <SelectItem value="CUSTODIAN">Custodian</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <div className="flex justify-end gap-2 mt-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setOpenRolePopup(null)}
+                            className='cursor-pointer'
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              handleRoleChange(user.email, selectedRole)
+                            }
+                            className='cursor-pointer'
+                          >
+                            Save
+                          </Button>
+                        </div>
                       </div>
+                    )}
+                  </TableCell>
+
+                  <TableCell className="text-center">
+                    <div className="flex justify-center gap-2 flex-wrap">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex items-center cursor-pointer gap-1 text-red-600 border-red-600 hover:bg-red-50"
+                        onClick={() => handleReject(user.email)}
+                      >
+                        <XCircle size={16} /> Reject
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          setCurrentUserEmail(user.email);
+                          setDialogOpen(true);
+                        }}
+                        className='cursor-pointer'
+                      >
+                        Assign Lab
+                      </Button>
                     </div>
-                  )}
-                </TableCell>
-
-                <TableCell className="text-center">
-                  <div className="flex justify-center gap-2 flex-wrap">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex items-center cursor-pointer gap-1 text-red-600 border-red-600 hover:bg-red-50"
-                      onClick={() => handleReject(user.email)}
-                    >
-                      <XCircle size={16} /> Reject
-                    </Button>
-
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => {
-                        setCurrentUserEmail(user.email);
-                        setDialogOpen(true);
-                      }}
-                      className='cursor-pointer'
-                    >
-                      Assign Lab
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
-
-    {/* Assign Lab Dialog */}
-    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Assign Laboratory</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 mt-2">
-          {/* Department Dropdown */}
-          <div>
-            <label>Department</label>
-            <Select
-              onValueChange={(val) => setSelectedDepartment(Number(val))}
-            >
-              <SelectTrigger className='w-full'>
-                <SelectValue placeholder="Choose Department" />
-              </SelectTrigger>
-              <SelectContent>
-                {departmentDetails.map((dept) => (
-                  <SelectItem
-                    key={dept.departmentId}
-                    value={dept.departmentId.toString()}
-                  >
-                    {dept.department_Name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Lab Dropdown */}
-          <div>
-            <label>Laboratory</label>
-            <Select
-              onValueChange={(val) => setSelectedUserLab(Number(val))}
-              disabled={!selectedDepartment}
-            >
-              <SelectTrigger className='w-full'>
-                <SelectValue placeholder="Choose Laboratory" />
-              </SelectTrigger>
-              <SelectContent>
-                {labs.map((lab) => (
-                  <SelectItem key={lab.labId} value={lab.labId.toString()}>
-                    {lab.labName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
+      </div>
 
-        <DialogFooter className="mt-4 flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleAssignLab}>Confirm</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  </div>
-);
+      {/* Assign Lab Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Assign Laboratory</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            {/* Department Dropdown */}
+            <div>
+              <label>Department</label>
+              <Select
+                onValueChange={(val) => setSelectedDepartment(Number(val))}
+              >
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder="Choose Department" />
+                </SelectTrigger>
+                <SelectContent>
+                  {departmentDetails.map((dept) => (
+                    <SelectItem
+                      key={dept.departmentId}
+                      value={dept.departmentId.toString()}
+                    >
+                      {dept.department_Name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-  
+            {/* Lab Dropdown */}
+            <div>
+              <label>Laboratory</label>
+              <Select
+                onValueChange={(val) => setSelectedUserLab(Number(val))}
+                disabled={!selectedDepartment}
+              >
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder="Choose Laboratory" />
+                </SelectTrigger>
+                <SelectContent>
+                  {labs.map((lab) => (
+                    <SelectItem key={lab.labId} value={lab.labId.toString()}>
+                      {lab.labName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4 flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAssignLab}>Confirm</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+
+
 };
 
 export default ApprovedUser;

@@ -82,7 +82,7 @@ const PendingUser: React.FC<Props> = ({ pendingUsers }) => {
             {users.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-6 text-gray-500">
-                  No pending users found
+                 No users are currently pending
                 </TableCell>
               </TableRow>
             )}
