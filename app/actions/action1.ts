@@ -85,7 +85,7 @@ export async function login(data: UserResponse) {
 
   if (!user) {
     writeLog(`FAILED LOGIN: User not found - ${email}`);
-    return { success: false, message: "User not found" };
+    return { success: false, message: "Something went wrong please " };
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);

@@ -155,19 +155,19 @@ const ApprovedUser: React.FC<Props> = ({ approvedUsers, departmentDetails }) => 
                   <div className="flex items-center justify-between pr-8">
                     {user.role}
                     {/* Role Edit Button */}
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className='cursor-pointer'
-                      onClick={() => {
-                        setOpenRolePopup(
-                          openRolePopup === user.email ? null : user.email
-                        );
-                        setSelectedRole(user.role);
-                      }}
-                    >
-                      <FaRegEdit className="text-gray-600 hover:text-blue-600" />
-                    </Button>
+                   <Button
+  size="icon"
+  variant="ghost"
+  className="cursor-pointer rounded-full bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+  onClick={() => {
+    setOpenRolePopup(openRolePopup === user.email ? null : user.email);
+    setSelectedRole(user.role);
+  }}
+>
+  <FaRegEdit className="text-blue-600 text-lg" />
+</Button>
+
+
                   </div>
 
                   {/* Role Popup */}
