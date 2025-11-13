@@ -135,6 +135,8 @@ const main = ({ custodianUsers, departmentDetails }: props) => {
               Laboratory Name
             </label>
             <Input
+
+            
               type="text"
               required
               id="labName"

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import BasicInformation from "@/app/user/profile/BasicInformation";
+import { Action } from "@prisma/client";
 
 
 type AssignedLabUser = {
@@ -38,7 +39,7 @@ type Custodian = {
   employeeId: string;
   password: string;
   role: "CUSTODIAN" | "USER" | "ADMIN";
-  action: "APPROVED" | "PENDING" | "REJECTED";
+  action: Action
   createdAt: Date;
   departmentId: number;
   department: {

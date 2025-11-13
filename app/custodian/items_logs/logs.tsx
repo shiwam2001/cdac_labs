@@ -25,10 +25,11 @@ import {
 } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Action, User } from "@prisma/client";
 
 type ItemType = {
   id: number;
-  assignedUserId: number;
+  assignedUserId: number|null;
   custodianName: string;
   dateNow: Date;
   quantity: number | null;
@@ -37,24 +38,20 @@ type ItemType = {
   deviceNumber: string | null;
   deviceType: string;
   labId: number;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  activety: string;
+  status:Action
   lab: {
     labId: number;
     labNumber: number | null;
     labName: string | null;
     custodianName: string | null;
+    custodian: User | null;
     createdAt: Date;
     departmentId: number;
     custodianId: string | null;
   };
-  assignedBy: {
-    id: number;
-    name: string;
-    employeeId: string;
-    email: string;
-    role: string;
-    createdAt: Date;
-  };
+  assignedBy: User| null;
+  transferedBy: User | null;
   department: {
     departmentId: number;
     department_Name: string;
@@ -76,7 +73,7 @@ const Logs: React.FC<LogsProps> = ({ items }) => {
         item.deviceNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.deviceType.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.lab.labName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.assignedBy.name.toLowerCase().includes(searchTerm.toLowerCase())
+        item.assignedBy?.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
   // Split data by status
@@ -104,13 +101,13 @@ const Logs: React.FC<LogsProps> = ({ items }) => {
       head: [["Sr. No.", "Device ID", "Device Number", "Device Type", "Department", "Lab", "Quantity", "Assigned By", "Custodian", "Status"]],
       body: filtered.map((item, index) => [
         index + 1,
-        item.id,
-        item.deviceNumber,
-        item.deviceType,
-        item.department.department_Name,
-        item.lab.labName,
-        item.quantity,
-        item.assignedBy.name,
+        item.id ?? "",
+        item.deviceNumber ?? "",
+        item.deviceType ?? "",
+        item.department.department_Name ?? "",
+        item.lab.labName ?? "",
+        item.quantity ?? 0,
+        item.assignedBy?.name ?? item.transferedBy?.name ?? "",
         item.custodianName,
         item.status,
       ]),
@@ -133,8 +130,9 @@ const Logs: React.FC<LogsProps> = ({ items }) => {
             <TableHead>Department</TableHead>
             <TableHead>Lab</TableHead>
             <TableHead>Custodian</TableHead>
-            <TableHead>Assigned By</TableHead>
+            <TableHead>Lab Incharge</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Activety</TableHead>
             <TableHead>Date Assigned</TableHead>
             <TableHead>Date Till</TableHead>
           </TableRow>
@@ -155,9 +153,10 @@ const Logs: React.FC<LogsProps> = ({ items }) => {
               <TableCell>{item.deviceType}</TableCell>
               <TableCell>{item.department.department_Name}</TableCell>
               <TableCell>{item.lab.labName || "N/A"}</TableCell>
-              <TableCell>{item.lab.custodianName || "N/A"}</TableCell>
-              <TableCell>{item.assignedBy.name}</TableCell>
-              <TableCell>{item.assignedBy.email}</TableCell>
+              <TableCell>{item.lab.custodian?.name || "N/A"}</TableCell>
+              <TableCell>{item.assignedBy?.name ? item.assignedBy.name : item.transferedBy?.name}</TableCell>
+              <TableCell>{item.assignedBy?.email ? item.assignedBy.email : item.transferedBy?.email}</TableCell>  
+              <TableCell>{item.activety}</TableCell>
               <TableCell>{item.dateNow.toLocaleDateString()}</TableCell>
               <TableCell>{item.dateTill ? item.dateTill.toLocaleDateString() : "N/A"}</TableCell>
             </TableRow>

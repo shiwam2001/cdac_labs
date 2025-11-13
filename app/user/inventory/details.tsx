@@ -1,5 +1,7 @@
-"use client";
 
+
+
+"use client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Department, Items, User } from "@prisma/client";
 import React, { useState } from "react";
@@ -9,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { FaRegEdit } from "react-icons/fa";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import { RiFileTransferLine } from "react-icons/ri";
 import { handleItemDeletion, transferItem, updateItem } from "@/app/actions/itemActions";
 import { MdDelete } from "react-icons/md";
@@ -20,12 +22,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
+import { createTransferRequest } from "@/app/actions/transferActions";
+import { is } from "date-fns/locale";
 
 export type ItemWithRelations = Items & {
   lab: MinimalLab;
   department: Department;
-  assignedBy: User;
+  assignedBy: User | null;
+  transferedBy: User | null;
 };
 
 type DepartmentWithLabs = {
@@ -45,12 +50,27 @@ type AddedItemsTableProps = {
 
 const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
   const [open, setOpen] = useState(false);
-  const [transferQuantity, setTransferQuantity] = useState(1)
+  const [transferQuantity, setTransferQuantity] = useState(1);
   const [transferOpen, setTransferOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ItemWithRelations | null>(null);
   const [formData, setFormData] = useState({ deviceNumber: "", deviceType: "" });
   const [selectedDept, setSelectedDept] = useState<number | null>(null);
   const [selectedLab, setSelectedLab] = useState<number | null>(null);
+  const [isValid, setIsValid] = useState(false);
+
+  // ✅ NEW: Search state
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // ✅ Filtered items based on search input
+  const filteredItems = addedItems.filter((item) => {
+    const search = searchTerm.toLowerCase();
+    return (
+      item.deviceNumber?.toLowerCase().includes(search) ||
+      item.deviceType?.toLowerCase().includes(search) ||
+      item.lab.labName?.toLowerCase().includes(search) ||
+      item.department.department_Name.toLowerCase().includes(search)
+    );
+  });
 
   const handleEditClick = (item: ItemWithRelations) => {
     setSelectedItem(item);
@@ -87,40 +107,64 @@ const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
   };
 
   const handleTransferSubmit = async () => {
+    setIsValid(true);
     if (!selectedItem || !selectedDept || !selectedLab) {
       toast.error("Please select department and lab");
       return;
     }
-
-    if (transferQuantity <=0 || transferQuantity > (selectedItem.quantity??0)){
-      toast.error("Invalid transfer quantity")
-      return
+    if (transferQuantity <= 0 || transferQuantity > (selectedItem.quantity ?? 0)) {
+      toast.error("Invalid transfer quantity");
+      return;
     }
-
     try {
-      await transferItem(selectedItem.id, selectedDept, selectedLab,transferQuantity)
-
-      toast.success("Item transferred successfully!");
+      const res = await createTransferRequest({
+        itemId: selectedItem.id,
+        fromLabId: selectedItem.lab.labId,
+        toLabId: selectedLab,
+        fromDeptId: selectedItem.department.departmentId,
+        toDeptId: selectedDept,
+        quantity: transferQuantity,
+        requestedBy: selectedItem.lab.custodian?.name ?? "Unknown",
+      });
+      
+      if (res.success) {
+        setIsValid(false);
       setTransferOpen(false);
+      toast.success("Transfer request created successfully!");
+      } else {
+        setIsValid(false);
+        toast.error(res.message || "Failed to create transfer request");
+      }
+
     } catch (error) {
       console.error(error);
-      toast.error("Failed to transfer item");
+      toast.error("Error creating transfer request");
     }
   };
 
   const handleDeleteItem = async (id: number) => {
-    const result = confirm("Are you sure to deleted the perticuler item.")
+    const result = confirm("Are you sure to deleted the perticuler item.");
     if (result) {
-      await handleItemDeletion(id)
-      toast.error("Item Deleted Request has gone at custodian panel.")
+      await handleItemDeletion(id);
+      toast.error("Item Deleted Request has gone at custodian panel.");
     }
+  };
 
-  }
   return (
     <div>
       <h1 className="mt-4 text-xl font-semibold border-b mb-3 pb-2">
         Added Items Details
       </h1>
+
+      {/* ✅ Search Bar */}
+      <div className="mb-3">
+        <Input
+          placeholder="Search by device number, type, lab, or department..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-1/3 border border-gray-300 shadow-sm"
+        />
+      </div>
 
       <div className="border rounded-2xl shadow-sm overflow-y-auto">
         <Table className="text-base px-2">
@@ -135,19 +179,19 @@ const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
               <TableHead>Date Added</TableHead>
               <TableHead>Valid Till</TableHead>
               <TableHead>Activity</TableHead>
-              <TableHead className="">Status</TableHead>
+              <TableHead className="text-center w-10% ">Status</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
-            {addedItems.length === 0 ? (
+            {filteredItems.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="text-center py-4">
-                  No items have been added yet.
+                  No matching items found.
                 </TableCell>
               </TableRow>
             ) : (
-              addedItems.map((item) => (
+              filteredItems.map((item) => (
                 <TableRow key={item.id} className="hover:bg-gray-50">
                   <TableCell>{item.id}</TableCell>
                   <TableCell>{item.deviceNumber ? item.deviceNumber : "N/A"}</TableCell>
@@ -161,7 +205,7 @@ const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
                   <TableCell>
                     {item.dateTill ? format(new Date(item.dateTill), "yyyy-MM-dd") : "N/A"}
                   </TableCell>
-                  {/* Actions */}
+
                   <TableCell>
                     <div className="flex gap-2">
                       <Tooltip>
@@ -199,16 +243,20 @@ const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
                     </div>
                   </TableCell>
 
-                  <TableCell>
+                  <TableCell className="text-center"
+                  >
                     <span
-                      className={`px-2 py-1 rounded-full text-white font-medium text-sm ${item.status === "PENDING"
-                        ? "bg-yellow-500"
-                        : item.status === "APPROVED"
-                          ? "bg-green-500"
+                      className={`px-2 py-1 text-center rounded-full text-white font-medium text-md ${
+                        item.status === "PENDING"
+                          ? "bg-yellow-500"
+                          : item.status === "APPROVED" ? "bg-green-500" : item.status === "TRANSFER_REQUESTS"
+                          ? "bg-blue-500"
+                          : item.status === "DELETE_REQUESTS"
+                          ? "bg-purple-500"
                           : "bg-red-500"
-                        }`}
+                      }`}
                     >
-                      {item.status}
+                      {item.status === "TRANSFER_REQUESTS" ? "Transfer request sent" : item.status === "DELETE_REQUESTS" ? "Delete request sent" : item.status}
                     </span>
                   </TableCell>
                 </TableRow>
@@ -218,7 +266,7 @@ const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
         </Table>
       </div>
 
-      {/* Update Dialog */}
+      {/* dialogs remain unchanged */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
@@ -332,7 +380,7 @@ const Details = ({ addedItems, getDepartment }: AddedItemsTableProps) => {
 
           <DialogFooter>
             <Button onClick={handleTransferSubmit} className="w-full">
-              Transfer
+              {isValid ? "Submitting..." : "Submit Transfer Request"}
             </Button>
           </DialogFooter>
         </DialogContent>

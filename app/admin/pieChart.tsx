@@ -1,4 +1,5 @@
 "use client";
+import { Action } from "@prisma/client";
 import React, { useMemo } from "react";
 import { PieChart, Pie, Tooltip, Cell, ResponsiveContainer } from "recharts";
 
@@ -19,7 +20,7 @@ export type Department = {
 
 export type ItemTypes = {
   id: number;
-  assignedUserId: number;
+  assignedUserId: number|null;
   custodianName: string;
   dateNow: Date;
   dateTill: Date | null;
@@ -29,7 +30,7 @@ export type ItemTypes = {
   activety: string;
   deviceType: string;
   labId: number;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status: Action
   lab: {
    departmentId: number;
   createdAt: Date;
@@ -39,14 +40,8 @@ export type ItemTypes = {
   custodianName: string | null;
   custodianId: string | null;
   };
-  assignedBy: {
-    id: number;
-    name: string;
-    employeeId: string;
-    email: string;
-    role: string;
-    createdAt: Date;
-  };
+  assignedBy: User | null;
+  transferedBy: User | null;
   department: Department;
 };
 

@@ -226,7 +226,8 @@ const Main: React.FC<Props> = ({ user }) => {
                     </div>
 
                     {/* Date Picker */}
-                    <div className="mt-6">
+                    <div className="">
+                        <label className="font-medium text-md">Assigned Till Date(optional): </label>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button

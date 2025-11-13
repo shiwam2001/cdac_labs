@@ -45,7 +45,7 @@ const navigation: Record<string, NavItem[]> = {
   CUSTODIAN: [
     { name: "Notification", href: "/custodian/notification", icon: <MdOutlineNotificationsActive size={20} /> },
     { name: "Profile", href: "/custodian/profile", icon: <MdSpaceDashboard size={20} /> },
-    
+    { name: "Transfer Requests", href: "/custodian/item_Request", icon: <MdSpaceDashboard size={20} /> },
     { name: "Item logs", href: "/custodian/items_logs", icon: <TbLogs size={18} /> },
   ],
 }

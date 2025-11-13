@@ -50,6 +50,7 @@ export const getAddedItems = async (userId: number) => {
         },
       },
       assignedBy: true,
+      transferedBy: true,
     },
     orderBy: {
       id: "desc",
@@ -68,6 +69,7 @@ export async function getItemsDetails() {
       },
       lab: true,
       assignedBy: true,
+      transferedBy: true,
     },
   });
 }
@@ -80,8 +82,13 @@ export async function getCustodianItems(userId: string) {
         },
       },
       include: {
-        lab: true,
+        lab: {
+          include: {
+            custodian: true,
+          },
+        },
         assignedBy: true,
+        transferedBy: true,
         department: true,
       },
     });
@@ -93,11 +100,14 @@ export async function getCustodianItems(userId: string) {
 }
 export async function getItemsApproved(itemId: number, activety: string) {
   if (activety === "DELETE") {
-    const items = await prisma.items.delete({
-      where: {
-        id: itemId,
-      },
+    await prisma.transferRequest.deleteMany({
+      where: { itemId: itemId },
     });
+
+    const items = await prisma.items.delete({
+      where: { id: itemId },
+    });
+    revalidatePath("custodian/notification");
     return { items, status: "success" };
   } else {
     const items = await prisma.items.update({
@@ -116,6 +126,7 @@ export async function getItemLogs() {
   return await prisma.items.findMany({
     include: {
       assignedBy: true,
+      transferedBy: true,
       department: true,
       lab: {
         select: {
@@ -151,7 +162,6 @@ export async function updateItem(selectedItemId: number, formData: FormData) {
         deviceType,
         status: "PENDING",
         activety: "UPDATE",
-        
       },
     });
 
@@ -235,7 +245,7 @@ export const handleItemDeletion = async (id: number) => {
     },
     data: {
       activety: "DELETE",
-      status: "PENDING",
+      status: "DELETE_REQUESTS",
     },
   });
 };
@@ -244,7 +254,8 @@ export const dataDetails = async (labId: number) => {
     where: { labId },
     include: {
       assignedBy: true,
-    }
+      transferedBy: true,
+    },
   });
   revalidatePath("admin/inventory");
   return result;

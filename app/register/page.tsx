@@ -7,7 +7,7 @@ const page = async() => {
   const departmentDetails =await getDepartmentDetail()
 
   return (
-    <div>
+    <div className=''>
       <Form departmentDetails={departmentDetails}/>
     </div>
   )

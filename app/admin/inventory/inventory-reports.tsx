@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { dataDetails } from "@/app/actions/itemActions";
-import { Action, Activety } from "@prisma/client";
+import { Action, Activety, User } from "@prisma/client";
 import { toast } from "sonner";
 
 interface Custodian {
@@ -46,7 +46,7 @@ interface Data {
   id: number;
   departmentId: number;
   labId: number;
-  assignedUserId: number;
+  assignedUserId: number|null;
   custodianName: string;
   quantity: number | null;
   deviceNumber: string | null;
@@ -56,12 +56,8 @@ interface Data {
   status: Action;
   activety: Activety;
   updatedAt: Date;
-  assignedBy: {
-    name: string;
-    email: string;
-    id: number
-    role: string
-  }
+  assignedBy: User | null;
+  transferedBy: User | null;
 }
 
 interface Props {
@@ -190,16 +186,15 @@ export default function InventoryReport({ department }: Props) {
                   <TableHead>Device ID</TableHead>
                   <TableHead>Device Number</TableHead>
                   <TableHead>Device Type</TableHead>
-                  <TableHead>Assigned By</TableHead>
+                  <TableHead>Lab Incharge</TableHead>
                   <TableHead>Assigning Date</TableHead>
-                  <TableHead >Details</TableHead>
-
+                  <TableHead>Details</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {!data || data.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">Firstly fetch the data.</TableCell>
+                    <TableCell colSpan={7} className="text-center">No items available</TableCell>
                   </TableRow>
                 ) : (
                   data?.map((item, index) =>
@@ -208,7 +203,7 @@ export default function InventoryReport({ department }: Props) {
                       <TableCell>{item.id}</TableCell>
                       <TableCell>{item.deviceNumber ? item.deviceNumber : "N/A"}</TableCell>
                       <TableCell>{item.deviceType}</TableCell>
-                      <TableCell>{item.assignedBy.name}</TableCell>
+                      <TableCell>{item.assignedBy?.name ? item.assignedBy.name : item.transferedBy?.name}</TableCell>
                       <TableCell>{new Date(item.dateNow).toLocaleDateString()}</TableCell>
 
                       <TableCell>
@@ -223,10 +218,11 @@ export default function InventoryReport({ department }: Props) {
                             <div className="space-y-1 text-sm">
                               <p><strong>Device number:</strong> {item.deviceNumber}</p>
                               <p><strong>Device:</strong> {item.deviceType} - {item.deviceNumber}</p>
+                              
                               <p><strong>Quantity:</strong> {item.quantity ? item.quantity : 1}</p>
-                              <p><strong>Assigned By:</strong> {item.assignedBy.name} ({item.assignedBy.role})</p>
-                              <p><strong>Email:</strong> {item.assignedBy.email}</p>
-                              <p><strong>Action:</strong> {item.activety}</p>
+                              <p><strong>{item.assignedBy ? "Assigned By:" : "Transferred By:"}</strong> {item.assignedBy?.name ? item.assignedBy.name : item.transferedBy?.name} ({item.assignedBy?.role ? item.assignedBy.role : item.transferedBy?.role})</p>
+                              <p><strong>Email:</strong> {item.assignedBy?.email ? item.assignedBy.email : item.transferedBy?.email}</p>
+                              <p><strong>Activity:</strong> {item.activety}</p>
                               <p>
                                 <strong>Update At:</strong>{" "}
                                 {item.updatedAt ? (item.updatedAt).toLocaleDateString() : "N/A"} (

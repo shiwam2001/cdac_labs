@@ -5,12 +5,10 @@ import { FaRegEdit } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { MdAssignmentInd } from "react-icons/md";
 import { Department, Users } from './main';
-
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -21,15 +19,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
 import { Button } from '@/components/ui/button';
-
 import { toast } from 'sonner';
 import { Action, Role } from '@prisma/client';
-import { LabDetails } from '../users/User';
 import { assignLab } from '@/app/actions/action2';
 
 export interface LabType {
@@ -54,17 +48,6 @@ export type labDetail = {
   }[]
 }
 
-// type User = {
-//   id: number;
-//   name: string;
-//   email: string;
-//   employeeId: string;
-//   department: number;
-//   departmentName: string;
-//   role: Role;
-//   action: Action;
-// };
-
 type User = {
   id: number;
   name: string;
@@ -87,7 +70,6 @@ const details = ({ users, custodianUsers, labDetail, departmentDetails }: props)
   const [showModal, setShowModal] = useState(false)
   const [custodianName, setCustodianName] = useState('')
   const [selectedLab, setSelectedLab] = useState<labDetail | null>(null)
-  const [deptDetail, setDeptDetail] = useState(departmentDetails)
   const [open, setOpen] = useState(false)
   const [openDelete, setOpenDelete] = useState(false)
   const [labId, setLabId] = useState<number>(0)
@@ -252,57 +234,6 @@ const details = ({ users, custodianUsers, labDetail, departmentDetails }: props)
 
 
                         <TooltipProvider>
-                          {/* <Dialog open={open} onOpenChange={setOpen} >
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <DialogTrigger asChild>
-                                  <Button
-                                    onClick={() => {
-                                      setSelectedLab(item)
-                                      setOpen(true)
-                                    }}
-                                    className="cursor-pointer"
-                                  >
-                                    <FaRegEdit size={20} />
-                                  </Button>
-                                </DialogTrigger>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Update custodian name</p>
-                              </TooltipContent>
-                            </Tooltip>
-
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle className='text-center'>Edit your <b><u>custodian</u></b> </DialogTitle>
-                                <DialogDescription>
-                                  This action cannot be undone. This will permanently delete your account
-                                  and remove your data from our servers.
-                                </DialogDescription>
-
-                                <Select
-                                  value={custodianName}
-                                  onValueChange={(value) => setCustodianName(value)} // 👈 update state
-                                >
-                                  <SelectTrigger className="w-full p-2 border border-gray-300 rounded mb-4">
-                                    <SelectValue placeholder="Edit Custodian" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value=".." disabled>
-                                    </SelectItem>
-                                    {custodianUsers.map((custodian) => (
-                                      <SelectItem key={custodian.id} value={custodian.name}>
-                                        {custodian.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                  <Button onClick={updateName}>Save</Button>
-                                </Select>
-
-                              </DialogHeader>
-                            </DialogContent>
-                          </Dialog> */}
-
                           <Dialog>
                             <Tooltip>
                               <TooltipTrigger asChild >
@@ -346,16 +277,6 @@ const details = ({ users, custodianUsers, labDetail, departmentDetails }: props)
                           </Dialog>
                         </TooltipProvider>
 
-
-                        {/* <Tooltip>
-                        <TooltipTrigger asChild>
-                          
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Assign Laboratory</p>
-                        </TooltipContent>
-                      </Tooltip> */}
-
                         <TooltipProvider>
                           <Dialog onOpenChange={setOpenDelete}>
                             <Tooltip>
@@ -385,14 +306,7 @@ const details = ({ users, custodianUsers, labDetail, departmentDetails }: props)
 
                           </Dialog>
                         </TooltipProvider>
-                        {/* <Tooltip>
-                        <TooltipTrigger asChild>
-                          
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Delete Laboratory</p>
-                        </TooltipContent>
-                      </Tooltip> */}
+                       
 
 
                       </div>

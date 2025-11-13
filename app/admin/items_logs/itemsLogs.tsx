@@ -21,7 +21,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { Department, User } from "@prisma/client";
+import { Action, Department, User } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import jsPDF from "jspdf";
@@ -29,7 +29,7 @@ import autoTable from "jspdf-autotable";
 
 export type ItemType = {
   id: number;
-  assignedUserId: number;
+  assignedUserId: number|null;
   custodianName: string;
   dateNow: Date;   // 👈 wapas Date
   dateTill: Date | null;
@@ -39,7 +39,7 @@ export type ItemType = {
   activety: string;
   deviceType: string;
   labId: number;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status:Action
   lab: {
     labId: number;
     labNumber: number | null;
@@ -48,14 +48,8 @@ export type ItemType = {
     custodian: User | null;
     custodianId: string | null;
   };
-  assignedBy: {
-    id: number;
-    name: string;
-    employeeId: string;
-    email: string;
-    role: string;
-    createdAt: Date;
-  };
+  assignedBy: User | null;
+  transferedBy: User | null;
   department: Department;
 };
  
@@ -81,7 +75,7 @@ const Logs: React.FC<LogsProps> = ({ items }) => {
         item.deviceNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.deviceType.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.lab.labName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.assignedBy.name.toLowerCase().includes(searchTerm.toLowerCase())
+        item.assignedBy?.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
   const approvedItems = items.filter((item) => item.status === "APPROVED");
@@ -118,17 +112,18 @@ const Logs: React.FC<LogsProps> = ({ items }) => {
         ],
       ],
       body: filtered.map((item, index) => [
-        index + 1,
-        item.id,
-        item.deviceNumber,
-        item.deviceType,
-        item.department.department_Name,
-        item.lab.labName,
-        item.quantity,
-        item.assignedBy.name,
-        item.custodianName,
-        item.status,
-      ]),
+  index + 1,
+  item.id ?? "",
+  item.deviceNumber ?? "",
+  item.deviceType ?? "",
+  item.department?.department_Name ?? "",
+  item.lab?.labName ?? "",
+  item.quantity ?? "",
+  item.assignedBy?.name ?? item.transferedBy?.name ?? "",
+  item.custodianName ?? "",
+  item.status ?? "",
+]),
+
     });
 
     doc.save(`${activeTab}-logs.pdf`);
@@ -146,9 +141,9 @@ const Logs: React.FC<LogsProps> = ({ items }) => {
             <TableHead>Department</TableHead>
             <TableHead>Lab</TableHead>
             <TableHead>Custodian</TableHead>
-            <TableHead>Assigned By</TableHead>
-            <TableHead>Email</TableHead>
             <TableHead>Activety</TableHead>
+            <TableHead>Activety By</TableHead>
+            <TableHead>Email</TableHead>
             <TableHead>Date Assigned</TableHead>
             <TableHead>Date Till</TableHead>
           </TableRow>
@@ -171,11 +166,11 @@ const Logs: React.FC<LogsProps> = ({ items }) => {
                 {item.lab.labName || "N/A"} ({item.lab.labNumber ?? "N/A"})
               </TableCell>
               <TableCell>{item.lab.custodian?.name || "N/A"}</TableCell>
-              <TableCell>
-                {item.assignedBy.name} ({item.assignedBy.role})
-              </TableCell>
-              <TableCell>{item.assignedBy.email}</TableCell>
               <TableCell>{item.activety}</TableCell>
+              <TableCell>
+                {item.assignedBy?.name ? item.assignedBy.name : item.transferedBy?.name} ({item.assignedBy?.role ? item.assignedBy.role : item.transferedBy?.role})
+              </TableCell>
+              <TableCell>{item.assignedBy?.email ? item.assignedBy.email : item.transferedBy?.email }</TableCell>
               <TableCell>
                 {clientLoaded
                   ? new Date(item.dateNow).toLocaleDateString()

@@ -21,7 +21,6 @@ type Props = {
 };
 
 const RegisterPage = ({ departmentDetails }: Props) => {
-  // ✅ Schema
   const registerSchema = z
     .object({
       name: z
@@ -65,13 +64,11 @@ const RegisterPage = ({ departmentDetails }: Props) => {
     confirmPassword: "",
   });
 
-  // ✅ Input handler
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
-  // ✅ Submit handler
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsValid(true);
@@ -135,64 +132,46 @@ const RegisterPage = ({ departmentDetails }: Props) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100">
+    <div className="min-h-screen flex items-center justify-center  bg-gradient-to-br from-blue-50 via-white to-blue-100 ">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className="flex flex-col md:flex-row bg-white/70 backdrop-blur-md rounded-3xl shadow-lg overflow-hidden w-[90%] max-w-5xl"
       >
-        {/* Left side (Form) */}
-        <div className="flex-1 p-10">
+        {/* Left side (Form Section) */}
+        <div className="flex-1 p-10 overflow-y-auto">
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-3xl font-bold text-center mb-6 text-gray-800"
+            className="text-3xl font-bold text-center mb-2 text-gray-800"
           >
             Register at CDAC IMS
           </motion.h1>
 
+          {/* ✅ Registration Instructions Section */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-5 text-sm text-gray-700"
+          >
+            <h2 className="font-semibold text-blue-700 mb-2">Instructions for Registration:</h2>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Fill in your **official employee details** carefully.</li>
+              <li>Use your **organization email address** (e.g., name@cdac.in).</li>
+              <li>Your **password** must include uppercase, lowercase, number, and a special character.</li>
+              <li>After registration, your account will be **reviewed and approved** by the Admin.</li>
+              <li>Once approved, you can log in to access your assigned laboratories.</li>
+            </ul>
+          </motion.div>
+
+          {/* Registration Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Name */}
-            <FormField
-              id="name"
-              label="Employee Name"
-              value={formData.name}
-              onChange={handleChange}
-              error={errors.name}
-              placeholder="Full Name"
-            />
-
-            {/* Employee ID */}
-            <FormField
-              id="employeeId"
-              label="Employee ID"
-              value={formData.employeeId}
-              onChange={handleChange}
-              error={errors.employeeId}
-              placeholder="Employee ID"
-            />
-            {/* {errors && (
-            <p className={`text-sm text-center text-red-500 font-semibold ${errors.employeeId ? "block" : "hidden"} `}>
-              {errors.employeeId}
-            </p>
-          )} */}
-
-            {/* Email */}
-            <FormField
-              id="email"
-              label="Email Address"
-              value={formData.email}
-              onChange={handleChange}
-              error={errors.email}
-              placeholder="example@cdac.in"
-            />
-            {/* {errors && (
-            <p className={`text-sm text-center text-red-500 font-semibold ${errors.email ? "block" : "hidden"} `}>
-              {errors.email}
-            </p>
-          )} */}
+            <FormField id="name" label="Employee Name" value={formData.name} onChange={handleChange} error={errors.name} placeholder="Full Name" />
+            <FormField id="employeeId" label="Employee ID" value={formData.employeeId} onChange={handleChange} error={errors.employeeId} placeholder="Employee ID" />
+            <FormField id="email" label="Email Address" value={formData.email} onChange={handleChange} error={errors.email} placeholder="example@cdac.in" />
 
             {/* Department */}
             <div className="flex flex-col gap-1">
@@ -218,10 +197,7 @@ const RegisterPage = ({ departmentDetails }: Props) => {
                     </SelectItem>
                   ) : (
                     deptDetail.map((item) => (
-                      <SelectItem
-                        key={item.departmentId}
-                        value={item.departmentId.toString()}
-                      >
+                      <SelectItem key={item.departmentId} value={item.departmentId.toString()}>
                         {item.department_Name}
                       </SelectItem>
                     ))
@@ -233,7 +209,6 @@ const RegisterPage = ({ departmentDetails }: Props) => {
               )}
             </div>
 
-            {/* Password */}
             <PasswordField
               id="password"
               label="Password"
@@ -244,7 +219,6 @@ const RegisterPage = ({ departmentDetails }: Props) => {
               error={errors.password}
             />
 
-            {/* Confirm Password */}
             <PasswordField
               id="confirmPassword"
               label="Confirm Password"
@@ -255,7 +229,6 @@ const RegisterPage = ({ departmentDetails }: Props) => {
               error={errors.confirmPassword}
             />
 
-            {/* Submit */}
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
@@ -280,7 +253,7 @@ const RegisterPage = ({ departmentDetails }: Props) => {
           </div>
         </div>
 
-        {/* Right side (Image) */}
+        {/* Right side (Image Section) */}
         <motion.div
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
@@ -298,23 +271,8 @@ const RegisterPage = ({ departmentDetails }: Props) => {
   );
 };
 
-// ✅ Subcomponents for clean code
-
-function FormField({
-  id,
-  label,
-  value,
-  onChange,
-  error,
-  placeholder,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: any;
-  error?: string;
-  placeholder?: string;
-}) {
+// Subcomponents
+function FormField({ id, label, value, onChange, error, placeholder }: any) {
   return (
     <div className="flex flex-col gap-1">
       <label htmlFor={id} className="font-medium text-gray-700">
@@ -326,17 +284,9 @@ function FormField({
   );
 }
 
-function PasswordField({
-  id,
-  label,
-  value,
-  onChange,
-  showPassword,
-  togglePassword,
-  error,
-}: any) {
+function PasswordField({ id, label, value, onChange, showPassword, togglePassword, error }: any) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col  gap-1">
       <label htmlFor={id} className="font-medium text-gray-700">
         {label}: <span className="text-red-500">*</span>
       </label>

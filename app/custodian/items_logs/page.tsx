@@ -5,7 +5,7 @@ import Logs from "./logs"
 
 const page = async() => {
     const currentUser= await getCurrentUser()
-    console.log(currentUser?.email)
+    
     if(!currentUser) return
     const items = await getCustodianItems(currentUser.email)
   return (

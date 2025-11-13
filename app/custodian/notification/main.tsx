@@ -18,10 +18,11 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format, formatDate } from 'date-fns';
 import { Checkbox } from "@/components/ui/checkbox"
+import { Action, User } from '@prisma/client';
 
 type ItemType = {
   id: number;
-  assignedUserId: number;
+  assignedUserId: number|null;
   custodianName: string;
   dateNow: Date;
   dateTill: Date | null;
@@ -29,7 +30,7 @@ type ItemType = {
   deviceNumber: string | null;
   deviceType: string;
   labId: number;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status: Action
   activety:"UPDATE" | "ADDED" | "TRANSFER" | "DELETE"
   lab: {
     labId: number;
@@ -40,18 +41,17 @@ type ItemType = {
     departmentId: number;
     custodianId: string | null;
   };
-  assignedBy: {
-    id: number;
-    name: string;
-    employeeId: string;
-    email: string;
-    role: string;
-    createdAt: Date;
-  };
+  assignedBy: User | null;
+  transferedBy: User | null;
+  
 };
+
+
+
 
 type MyComponentProps = {
   items: ItemType[];
+  
 };
 
 const NotificationTable: React.FC<MyComponentProps> = ({ items }) => {
@@ -186,9 +186,9 @@ const NotificationTable: React.FC<MyComponentProps> = ({ items }) => {
           )}
           {pendingItems.map((item) => (
             <TableRow key={item.id}>
-    <TableCell>{format (new Date(item.dateNow), "dd-MM-yyyy")}</TableCell>
-<TableCell>{format(new Date(item.dateNow), "HH:mm:ss")}</TableCell>
-              <TableCell>{item.assignedBy.name}</TableCell>
+            <TableCell>{format (new Date(item.dateNow), "dd-MM-yyyy")}</TableCell>
+              <TableCell>{format(new Date(item.dateNow), "HH:mm:ss")}</TableCell>
+              <TableCell>{item.assignedBy?.name ?? item.transferedBy?.name}</TableCell>
               <TableCell>
                 {item.deviceType} - {item.deviceNumber}
               </TableCell>
@@ -209,8 +209,8 @@ const NotificationTable: React.FC<MyComponentProps> = ({ items }) => {
                       <p><strong>Device:</strong> {item.deviceType} - {item.deviceNumber}</p>
                       <p><strong>Lab:</strong> {item.lab.labName} ({item.lab.labNumber})</p>
                       <p><strong>Custodian:</strong> {item.lab.custodianName || 'N/A'}</p>
-                      <p><strong>Assigned By:</strong> {item.assignedBy.name} ({item.assignedBy.role})</p>
-                      <p><strong>Email:</strong> {item.assignedBy.email}</p>
+                      <p><strong>Assigned By:</strong> {item.assignedBy?.name ?? item.transferedBy?.name ?? 'N/A'} ({item.assignedBy?.role ?? item.transferedBy?.role ?? 'N/A'})</p>
+                      <p><strong>Email:</strong> {item.assignedBy?.email ?? item.transferedBy?.email ?? 'N/A'}</p>
                       <p><strong>Date From:</strong> {item.dateNow.toLocaleDateString()}</p>
                       <p><strong>Date Till:</strong> {item.dateTill ? item.dateTill.toLocaleDateString() : 'N/A'}</p>
                       <p>
@@ -255,8 +255,10 @@ const NotificationTable: React.FC<MyComponentProps> = ({ items }) => {
                       <p><span className="font-semibold">Device:</span> {item.deviceType} - {item.deviceNumber}</p>
                       <p><span className="font-semibold">Lab:</span> {item.lab.labName || "N/A"}</p>
                       <p><span className="font-semibold">Custodian:</span> {item.lab.custodianName || "N/A"}</p>
-                      <p><span className="font-semibold">Assigned By:</span> {item.assignedBy.name} ({item.assignedBy.role})</p>
-                      <p><span className="font-semibold">Email:</span> {item.assignedBy.email}</p>
+                      <p><span className="font-semibold">Lab Incharge:</span> {item.assignedBy?.name ?? item.transferedBy?.name ?? "N/A"} ({item.assignedBy?.role ?? item.transferedBy?.role ?? "N/A"})</p>
+                      
+                      <p><span className="font-semibold">Email:</span> {item.assignedBy?.email ?? item.transferedBy?.email ?? "N/A"}</p>
+                      <p><span className="font-semibold">Activety:</span> {item.activety}</p>
                     </div>
 
                     <DialogFooter>
@@ -295,8 +297,8 @@ const NotificationTable: React.FC<MyComponentProps> = ({ items }) => {
                     <div className="p-3 rounded-md bg-gray-50 text-sm space-y-2">
                       <p><span className="font-semibold">Device:</span> {item.deviceType} - {item.deviceNumber}</p>
                       <p><span className="font-semibold">Lab:</span> {item.lab.labName || "N/A"}</p>
-                      <p><span className="font-semibold">Assigned By:</span> {item.assignedBy.name} ({item.assignedBy.role})</p>
-                      <p><span className="font-semibold">Email:</span> {item.assignedBy.email}</p>
+                      <p><span className="font-semibold">Lab Incharge:</span> {item.assignedBy?.name ?? item.transferedBy?.name ?? "N/A"} ({item.assignedBy?.role ?? item.transferedBy?.role ?? "N/A"})</p>
+                      <p><span className="font-semibold">Email:</span> {item.assignedBy?.email ?? item.transferedBy?.email ?? "N/A"}</p>
                     </div>
 
                     <DialogFooter>

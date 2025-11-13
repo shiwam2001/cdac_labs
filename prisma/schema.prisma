@@ -23,29 +23,28 @@ model User {
   department    Department  @relation(fields: [departmentId], references: [departmentId])
   role       Role     @default(USER)
   action     Action   @default(PENDING)
-  labs Lab[]  @relation("CustodianLabs")
+  labs Lab[]          @relation("CustodianLabs")
   createdAt  DateTime @default(now())
   assignedLabs AssignedLab[]
 
-  items          Items[]
+  assignedItems  Items[]  @relation("AssignedByUser")
+  transferedItems Items[] @relation("TransferedByUser")
 }
 
 model Lab {
-  labId  Int @id  @unique @default(autoincrement())
-  labNumber     Int?    
-  labName       String?
-  custodianName String?
-  createdAt     DateTime @default(now())
-  custodianId  String?  
-  custodian    User?      @relation("CustodianLabs", fields: [custodianId], references: [email])
-  
-  departmentId  Int
-  
-  department    Department  @relation(fields: [departmentId], references: [departmentId])
-  assignedLabs  AssignedLab[] 
-
+  labId          Int           @id  @unique @default(autoincrement())
+  labNumber      Int?    
+  labName        String?
+  custodianName  String?
+  createdAt      DateTime      @default(now())
+  custodianId    String?  
+  custodian      User?         @relation("CustodianLabs", fields: [custodianId], references: [email])
+  departmentId   Int
+  department     Department    @relation(fields: [departmentId], references: [departmentId])
+  assignedLabs   AssignedLab[] 
   items          Items[]
-  
+  fromTransfers TransferRequest[] @relation("FromLabTransfer")
+  toTransfers   TransferRequest[] @relation("ToLabTransfer")
 }   
 
 model Department {
@@ -55,6 +54,8 @@ model Department {
   users  User[]
   createdAt DateTime @default(now())
   items          Items[]
+  fromTransfers TransferRequest[] @relation("FromDeptTransfer")
+  toTransfers   TransferRequest[] @relation("ToDeptTransfer")
 }
 
 model AssignedLab {
@@ -63,13 +64,14 @@ model AssignedLab {
   email  String
   lab    Lab  @relation(fields: [labId], references: [labId])
   labId  Int
-
-  @@unique([email, labId]) // Prevent duplicate assignment
+  @@unique([email, labId]) 
 }
 
 enum Action {
   PENDING
   REJECTED
+   TRANSFER_REQUESTS
+  DELETE_REQUESTS
   APPROVED
 }
 
@@ -83,28 +85,53 @@ enum Activety {
   DELETE
   UPDATE
   TRANSFER
+ 
   ADDED
 }
 
 model Items {
-  id      Int  @id @default(autoincrement())
-  departmentId  Int 
-  labId Int
-  assignedUserId Int
-  custodianName String
-  quantity  Int? @default(1)
-  deviceNumber  String?
-  deviceType  String
-  dateNow   DateTime @default(now())
-  dateTill   DateTime?
-  updatedAt   DateTime @default(now()) @updatedAt
-
-  department Department @relation(fields: [departmentId],references: [departmentId])
-  lab Lab @relation(fields:[labId],references: [labId])
-  assignedBy User @relation(fields:[assignedUserId],references: [id])
-  status Action   @default(PENDING)
-  activety   Activety @default(ADDED)
-
+  id               Int               @id @default(autoincrement())
+  departmentId     Int 
+  labId            Int
+  assignedUserId   Int?
+  custodianName    String
+  quantity         Int?              @default(1)
+  deviceNumber     String?
+  deviceType       String
+  dateNow          DateTime          @default(now())
+  dateTill         DateTime?
+  updatedAt        DateTime          @default(now()) @updatedAt
+  department       Department        @relation(fields: [departmentId],references: [departmentId])
+  lab              Lab               @relation(fields:[labId],references: [labId])
+  transferedUserId Int?
+  assignedBy      User?   @relation("AssignedByUser", fields: [assignedUserId], references: [id])
+  transferedBy     User?            @relation("TransferedByUser", fields: [transferedUserId], references: [id]) 
+  status           Action            @default(PENDING)
+  activety         Activety          @default(ADDED)
+  transferRequests TransferRequest[]
   @@map("items")
 }
+
+model TransferRequest {
+  id             Int   @id @default(autoincrement())
+  itemId         Int
+  item           Items    @relation(fields: [itemId], references: [id])
+  fromLabId      Int
+  fromLab        Lab      @relation("FromLabTransfer", fields: [fromLabId], references: [labId])
+  toLabId        Int
+  toLab          Lab      @relation("ToLabTransfer", fields: [toLabId], references: [labId])
+  fromDeptId     Int
+  fromDepartment Department @relation("FromDeptTransfer", fields: [fromDeptId], references: [departmentId])
+  toDeptId       Int
+  toDepartment   Department @relation("ToDeptTransfer", fields: [toDeptId], references: [departmentId])
+  quantity       Int
+  status         Action   @default(PENDING) 
+  activety       Activety @default(TRANSFER)
+  requestedBy    String? // Add who requested the transfer
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@map("transfer_requests")
+}
+
 
